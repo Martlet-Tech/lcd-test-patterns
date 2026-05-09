@@ -829,6 +829,14 @@ function generate() {
     results.push({ name, canvas: final, format: fmt });
   }
 
+  // Detail/Simple mode output filenames use just the number: "1. Black Frame" -> "1"
+  function outputName(p) {
+    if (p.cat === 'Detail Mode' || p.cat === 'Simple Mode') {
+      return p.label.split('.')[0];
+    }
+    return p.label;
+  }
+
   // Check which patterns are selected
   document.querySelectorAll('.pattern-item input[type="checkbox"]').forEach(cb => {
     if (!cb.checked) return;
@@ -839,80 +847,80 @@ function generate() {
     switch (p.gen) {
       case 'solid': {
         const color = p.params.color.def;
-        addResult(p.label, buildCanvas(genW, genH, (ctx,w,h) => drawSolid(ctx,w,h,color)));
+        addResult(outputName(p), buildCanvas(genW, genH, (ctx,w,h) => drawSolid(ctx,w,h,color)));
         break;
       }
       case 'frame': {
         const fw = parseInt(document.getElementById('p_'+id+'_frameWidth').value || 4);
         const circle = document.getElementById('p_'+id+'_isCircle').checked;
-        addResult(p.label, buildCanvas(genW, genH, (ctx,w,h) => drawFrame(ctx,w,h,fw,circle)));
+        addResult(outputName(p), buildCanvas(genW, genH, (ctx,w,h) => drawFrame(ctx,w,h,fw,circle)));
         break;
       }
       case 'colorBar': {
-        addResult(p.label, buildCanvas(genW, genH, drawColorBar));
+        addResult(outputName(p), buildCanvas(genW, genH, drawColorBar));
         break;
       }
       case 'grayCrosstalk': {
-        addResult(p.label, buildCanvas(genW, genH, (ctx,w,h) => drawGrayCrosstalk(ctx,w,h,gradStart,gradEnd)));
+        addResult(outputName(p), buildCanvas(genW, genH, (ctx,w,h) => drawGrayCrosstalk(ctx,w,h,gradStart,gradEnd)));
         break;
       }
       case 'samplePic': {
-        addResult(p.label, buildCanvas(genW, genH, drawSamplePic));
+        addResult(outputName(p), buildCanvas(genW, genH, drawSamplePic));
         break;
       }
       case 'scale': {
-        addResult(p.label, buildCanvas(genW, genH, drawScale));
+        addResult(outputName(p), buildCanvas(genW, genH, drawScale));
         break;
       }
       case 'frameTriangle': {
-        addResult(p.label, buildCanvas(genW, genH, drawFrameTriangle));
+        addResult(outputName(p), buildCanvas(genW, genH, drawFrameTriangle));
         break;
       }
       case 'chess': {
         const gs = parseInt(document.getElementById('p_'+id+'_gridSize').value || 16);
-        addResult(p.label, buildCanvas(genW, genH, (ctx,w,h) => drawChess(ctx,w,h,gs)));
+        addResult(outputName(p), buildCanvas(genW, genH, (ctx,w,h) => drawChess(ctx,w,h,gs)));
         break;
       }
       case 'hline': {
         const sw = parseInt(document.getElementById('p_'+id+'_stripeWidth').value || 4);
-        addResult(p.label, buildCanvas(genW, genH, (ctx,w,h) => drawHLine(ctx,w,h,sw)));
+        addResult(outputName(p), buildCanvas(genW, genH, (ctx,w,h) => drawHLine(ctx,w,h,sw)));
         break;
       }
       case 'vline': {
         const sw2 = parseInt(document.getElementById('p_'+id+'_stripeWidth').value || 4);
-        addResult(p.label, buildCanvas(genW, genH, (ctx,w,h) => drawVLine(ctx,w,h,sw2)));
+        addResult(outputName(p), buildCanvas(genW, genH, (ctx,w,h) => drawVLine(ctx,w,h,sw2)));
         break;
       }
       case 'allrgb': {
-        addResult(p.label, buildCanvas(genW, genH, drawAllRGB));
+        addResult(outputName(p), buildCanvas(genW, genH, drawAllRGB));
         break;
       }
       case 'xtalkHV': {
-        addResult(p.label, buildCanvas(genW, genH, drawCrossTalkHV));
+        addResult(outputName(p), buildCanvas(genW, genH, drawCrossTalkHV));
         break;
       }
       case 'xtalkH': {
-        addResult(p.label, buildCanvas(genW, genH, drawCrossTalkH));
+        addResult(outputName(p), buildCanvas(genW, genH, drawCrossTalkH));
         break;
       }
       case 'xtalkV': {
-        addResult(p.label, buildCanvas(genW, genH, drawCrossTalkV));
+        addResult(outputName(p), buildCanvas(genW, genH, drawCrossTalkV));
         break;
       }
       case 'flickerPattern': {
-        addResult(p.label, buildCanvas(genW, genH, (ctx,w,h) => drawFlickerPattern(ctx,w,h,colA,colB,bs)));
+        addResult(outputName(p), buildCanvas(genW, genH, (ctx,w,h) => drawFlickerPattern(ctx,w,h,colA,colB,bs)));
         break;
       }
       case 'flickerH': {
-        addResult(p.label, buildCanvas(genW, genH, (ctx,w,h) => drawFlickerH(ctx,w,h,colA,colB)));
+        addResult(outputName(p), buildCanvas(genW, genH, (ctx,w,h) => drawFlickerH(ctx,w,h,colA,colB)));
         break;
       }
       case 'flickerV': {
-        addResult(p.label, buildCanvas(genW, genH, (ctx,w,h) => drawFlickerV(ctx,w,h,colA,colB)));
+        addResult(outputName(p), buildCanvas(genW, genH, (ctx,w,h) => drawFlickerV(ctx,w,h,colA,colB)));
         break;
       }
       case 'gradient': {
-        addResult(p.label, buildCanvas(genW, genH, (ctx,w,h) => drawGradient(ctx,w,h,gradStart,gradEnd,gradDir)));
+        addResult(outputName(p), buildCanvas(genW, genH, (ctx,w,h) => drawGradient(ctx,w,h,gradStart,gradEnd,gradDir)));
         break;
       }
     }
