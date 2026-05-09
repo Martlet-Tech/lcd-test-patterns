@@ -146,19 +146,20 @@ input[type="checkbox"] { accent-color: var(--accent); }
 
 <header>
   <div>
-    <h1><span>LCD</span> Test Patterns</h1>
-    <div class="subtitle">Display Test Image Generator &mdash; for LCD panel debug &amp; characterization</div>
+    <h1><span>LCD</span> <span data-i18n="title">Test Patterns</span></h1>
+    <div class="subtitle" data-i18n="subtitle">Display Test Image Generator &mdash; for LCD panel debug &amp; characterization</div>
   </div>
   <div class="flex gap-8 items-center">
-    <a href="https://github.com/Martlet-Tech/lcd-test-patterns" target="_blank">GitHub</a>
-    <span class="text-dim text-sm">v1.0</span>
+    <button id="btnLang" class="btn btn-sm" onclick="toggleLang()" style="min-width:40px;font-weight:600;">EN</button>
+    <a href="https://github.com/Martlet-Tech/lcd-test-patterns" target="_blank" data-i18n="github">GitHub</a>
+    <span class="text-dim text-sm" data-i18n="ver">v1.0</span>
   </div>
 </header>
 
 <nav class="tab-nav" role="tablist">
-  <button class="active" data-tab="patterns" role="tab">Test Patterns</button>
-  <button data-tab="timing" role="tab">DPI Timing Calculator</button>
-  <button data-tab="about" role="tab">About</button>
+  <button class="active" data-tab="patterns" role="tab" data-i18n="tab.patterns">Test Patterns</button>
+  <button data-tab="timing" role="tab" data-i18n="tab.timing">DPI Timing Calculator</button>
+  <button data-tab="about" role="tab" data-i18n="tab.about">About</button>
 </nav>
 
 <!-- ============ TAB: PATTERNS ============ -->
@@ -166,13 +167,13 @@ input[type="checkbox"] { accent-color: var(--accent); }
 
   <!-- Resolution -->
   <div class="section">
-    <div class="section-header">Resolution</div>
+    <div class="section-header" data-i18n="res.title">Resolution</div>
     <div class="section-body">
       <div class="form-row">
         <div class="form-group">
-          <label>Preset</label>
+          <label data-i18n="res.preset">Preset</label>
           <select id="resPreset">
-            <option value="">Custom</option>
+            <option value="" data-i18n="res.custom">Custom</option>
             <option value="240,320">D (240×320)</option>
             <option value="320,480">H (320×480)</option>
             <option value="480,272">I (480×272)</option>
@@ -184,35 +185,35 @@ input[type="checkbox"] { accent-color: var(--accent); }
           </select>
         </div>
         <div class="form-group">
-          <label>Width</label>
+          <label data-i18n="res.width">Width</label>
           <input type="number" id="resX" value="240" min="1" max="8192">
         </div>
         <div class="form-group">
-          <label>Height</label>
+          <label data-i18n="res.height">Height</label>
           <input type="number" id="resY" value="320" min="1" max="8192">
         </div>
-        <button class="btn btn-secondary" id="btnSwap" title="Swap width &amp; height">&#8646; Swap</button>
+        <button class="btn btn-secondary" id="btnSwap" title="Swap width &amp; height" data-i18n="res.swap">&#8646; Swap</button>
       </div>
       <div class="form-row">
         <div class="form-group flex items-center" style="flex-direction:row; gap:6px;">
           <input type="checkbox" id="chkCutPanel">
-          <label for="chkCutPanel" style="font-size:13px; color:var(--text); cursor:pointer;">Cut Panel Mode</label>
+          <label for="chkCutPanel" style="font-size:13px; color:var(--text); cursor:pointer;" data-i18n="res.cutPanel">Cut Panel Mode</label>
         </div>
         <div class="form-group">
-          <label>Visible Height</label>
+          <label data-i18n="res.visH">Visible Height</label>
           <input type="number" id="cutKeep" value="320" min="1" max="8192" disabled>
         </div>
         <div class="form-group">
-          <label>Total Height</label>
+          <label data-i18n="res.totalH">Total Height</label>
           <input type="number" id="cutTotal" value="360" min="1" max="8192" disabled>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group flex items-center" style="flex-direction:row; gap:10px;">
-          <label style="font-size:13px; color:var(--text);">Format:</label>
-          <label style="font-size:13px; font-weight:400;"><input type="radio" name="fmt" value="bmp" checked> BMP (24-bit)</label>
-          <label style="font-size:13px; font-weight:400;"><input type="radio" name="fmt" value="png"> PNG</label>
-          <label style="font-size:13px; font-weight:400;"><input type="radio" name="fmt" value="jpeg"> JPEG</label>
+          <label style="font-size:13px; color:var(--text);" data-i18n="res.fmt">Format:</label>
+          <label style="font-size:13px; font-weight:400;"><input type="radio" name="fmt" value="bmp" checked> <span data-i18n="fmt.bmp">BMP (24-bit)</span></label>
+          <label style="font-size:13px; font-weight:400;"><input type="radio" name="fmt" value="png"> <span data-i18n="fmt.png">PNG</span></label>
+          <label style="font-size:13px; font-weight:400;"><input type="radio" name="fmt" value="jpeg"> <span data-i18n="fmt.jpeg">JPEG</span></label>
         </div>
       </div>
     </div>
@@ -221,17 +222,17 @@ input[type="checkbox"] { accent-color: var(--accent); }
   <!-- Patterns -->
   <div class="section">
     <div class="section-header">
-      <span>Test Patterns</span>
+      <span data-i18n="pat.title">Test Patterns</span>
       <div class="flex gap-8 items-center">
-        <span class="text-dim text-sm" id="selectedCount">0 selected</span>
+        <span class="text-dim text-sm" id="selectedCount">0 <span data-i18n="pat.selected">selected</span></span>
       </div>
     </div>
     <div class="section-body">
       <div class="quick-select">
-        <button class="btn btn-sm btn-secondary" onclick="selectAllInView()">Select All</button>
-        <button class="btn btn-sm btn-secondary" onclick="deselectAll()">Deselect All</button>
-        <button class="btn btn-sm btn-primary" onclick="selectDetailMode()">Detail Mode (10 pics)</button>
-        <button class="btn btn-sm btn-success" onclick="selectSimpleMode()">Simple Mode (5 pics)</button>
+        <button class="btn btn-sm btn-secondary" onclick="selectAllInView()" data-i18n="pat.selAll">Select All</button>
+        <button class="btn btn-sm btn-secondary" onclick="deselectAll()" data-i18n="pat.deselAll">Deselect All</button>
+        <button class="btn btn-sm btn-primary" onclick="selectDetailMode()" data-i18n="pat.detail">Detail Mode (10 pics)</button>
+        <button class="btn btn-sm btn-success" onclick="selectSimpleMode()" data-i18n="pat.simple">Simple Mode (5 pics)</button>
       </div>
       <div class="pattern-grid" id="patternList">
         <!-- populated by JS -->
@@ -241,30 +242,30 @@ input[type="checkbox"] { accent-color: var(--accent); }
 
   <!-- Gradient Settings -->
   <div class="section">
-    <div class="section-header">Gradient Settings</div>
+    <div class="section-header" data-i18n="grad.title">Gradient Settings</div>
     <div class="section-body">
       <div class="form-row">
         <div class="form-group">
-          <label>Start Color</label>
+          <label data-i18n="grad.start">Start Color</label>
           <input type="color" id="gradStart" value="#ffffff">
         </div>
         <div class="form-group">
-          <label>End Color</label>
+          <label data-i18n="grad.end">End Color</label>
           <input type="color" id="gradEnd" value="#000000">
         </div>
       </div>
       <div class="form-row">
         <div class="form-group" style="flex:1;">
-          <label>Direction</label>
+          <label data-i18n="grad.dir">Direction</label>
           <div class="radio-group" id="gradDirections">
-            <label><input type="radio" name="gradDir" value="LR" checked><span>Left→Right</span></label>
-            <label><input type="radio" name="gradDir" value="RL"><span>Right→Left</span></label>
-            <label><input type="radio" name="gradDir" value="UD"><span>Up→Down</span></label>
-            <label><input type="radio" name="gradDir" value="DU"><span>Down→Up</span></label>
-            <label><input type="radio" name="gradDir" value="LU-RD"><span>↘ Diagonal</span></label>
-            <label><input type="radio" name="gradDir" value="RD-LU"><span>↖ Diagonal</span></label>
-            <label><input type="radio" name="gradDir" value="RU-LD"><span>↙ Diagonal</span></label>
-            <label><input type="radio" name="gradDir" value="LD-RU"><span>↗ Diagonal</span></label>
+            <label><input type="radio" name="gradDir" value="LR" checked><span data-i18n="grad.LR">Left→Right</span></label>
+            <label><input type="radio" name="gradDir" value="RL"><span data-i18n="grad.RL">Right→Left</span></label>
+            <label><input type="radio" name="gradDir" value="UD"><span data-i18n="grad.UD">Up→Down</span></label>
+            <label><input type="radio" name="gradDir" value="DU"><span data-i18n="grad.DU">Down→Up</span></label>
+            <label><input type="radio" name="gradDir" value="LU-RD"><span data-i18n="grad.LU-RD">↘ Diagonal</span></label>
+            <label><input type="radio" name="gradDir" value="RD-LU"><span data-i18n="grad.RD-LU">↖ Diagonal</span></label>
+            <label><input type="radio" name="gradDir" value="RU-LD"><span data-i18n="grad.RU-LD">↙ Diagonal</span></label>
+            <label><input type="radio" name="gradDir" value="LD-RU"><span data-i18n="grad.LD-RU">↗ Diagonal</span></label>
           </div>
         </div>
       </div>
@@ -273,19 +274,19 @@ input[type="checkbox"] { accent-color: var(--accent); }
 
   <!-- Flicker Settings -->
   <div class="section">
-    <div class="section-header">Flicker / Pattern Colors</div>
+    <div class="section-header" data-i18n="flick.title">Flicker / Pattern Colors</div>
     <div class="section-body">
       <div class="form-row">
         <div class="form-group">
-          <label>Color A</label>
+          <label data-i18n="flick.ca">Color A</label>
           <input type="color" id="flickColorA" value="#000000">
         </div>
         <div class="form-group">
-          <label>Color B</label>
+          <label data-i18n="flick.cb">Color B</label>
           <input type="color" id="flickColorB" value="#ff0000">
         </div>
         <div class="form-group">
-          <label>Block Size</label>
+          <label data-i18n="flick.bs">Block Size</label>
           <input type="number" id="flickBlockSize" value="10" min="1" max="200">
         </div>
       </div>
@@ -294,7 +295,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
 
   <!-- Generate -->
   <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
-    <button class="btn btn-primary" id="btnGenerate" style="padding:12px 32px; font-size:15px;">Generate Patterns</button>
+    <button class="btn btn-primary" id="btnGenerate" style="padding:12px 32px; font-size:15px;" data-i18n="btn.gen">Generate Patterns</button>
     <span class="text-dim text-sm">Tip: use <strong>Copy</strong> (clipboard, no Windows warning) or <strong>Save As...</strong> (native dialog) buttons.</span>
   </div>
 
@@ -302,17 +303,17 @@ input[type="checkbox"] { accent-color: var(--accent); }
   <div id="resultsSection" style="display:none;">
     <div class="section">
       <div class="section-header">
-        <span>Generated Patterns <span class="text-dim text-sm" id="resultCount"></span></span>
-        <button class="btn btn-success" id="btnDownloadAll" style="padding:12px 32px; font-size:15px;">Download All as ZIP</button>
+        <span><span data-i18n="res.gen">Generated Patterns</span> <span class="text-dim text-sm" id="resultCount"></span></span>
+        <button class="btn btn-success" id="btnDownloadAll" style="padding:12px 32px; font-size:15px;" data-i18n="btn.zip">Download All as ZIP</button>
       </div>
       <div class="section-body">
         <div id="resultsPlaceholder" class="empty-state">
-          <p>Click "Generate Patterns" to create test images.</p>
+          <p data-i18n="res.empty1">Click "Generate Patterns" to create test images.</p>
         </div>
         <div class="gallery" id="gallery"></div>
         <div class="text-dim text-sm mt-16" style="border:1px solid var(--border); border-radius:var(--radius); padding:10px 14px; background:rgba(88,166,255,.05);">
-          <strong>To save without Windows security warning:</strong>
-          &nbsp;1. Click <strong>Copy</strong> button &nbsp; 2. Open your folder &nbsp; 3. Press <kbd>Ctrl+V</kbd> (pastes as PNG file, no Zone Identifier)
+          <strong data-i18n="res.tip">To save without Windows security warning:</strong>
+          &nbsp;<span data-i18n="res.tip1">1. Click Copy button</span> &nbsp; <span data-i18n="res.tip2">2. Open your folder</span> &nbsp; <span data-i18n="res.tip3">3. Press Ctrl+V (PNG, no Zone Identifier)</span>
         </div>
       </div>
     </div>
@@ -322,74 +323,74 @@ input[type="checkbox"] { accent-color: var(--accent); }
 <!-- ============ TAB: TIMING ============ -->
 <div id="tab-timing" class="tab-content">
   <div class="section">
-    <div class="section-header">DPI Timing Parameters</div>
+    <div class="section-header" data-i18n="timing.title">DPI Timing Parameters</div>
     <div class="section-body">
       <div class="dpi-grid">
         <div class="col">
-          <h3 style="font-size:13px; color:var(--accent); margin-bottom:4px;">Horizontal</h3>
+          <h3 style="font-size:13px; color:var(--accent); margin-bottom:4px;" data-i18n="timing.h">Horizontal</h3>
           <div class="form-row">
-            <div class="form-group"><label>HSW</label><input type="number" id="hsw" value="4" min="1"></div>
-            <div class="form-group"><label>HBP</label><input type="number" id="hbp" value="20" min="1"></div>
-            <div class="form-group"><label>HACT</label><input type="number" id="hact" value="240" min="1"></div>
-            <div class="form-group"><label>HFP</label><input type="number" id="hfp" value="10" min="1"></div>
+            <div class="form-group"><label data-i18n="timing.hsw">HSW</label><input type="number" id="hsw" value="4" min="1"></div>
+            <div class="form-group"><label data-i18n="timing.hbp">HBP</label><input type="number" id="hbp" value="20" min="1"></div>
+            <div class="form-group"><label data-i18n="timing.hact">HACT</label><input type="number" id="hact" value="240" min="1"></div>
+            <div class="form-group"><label data-i18n="timing.hfp">HFP</label><input type="number" id="hfp" value="10" min="1"></div>
           </div>
         </div>
         <div class="col">
-          <h3 style="font-size:13px; color:var(--accent); margin-bottom:4px;">Vertical</h3>
+          <h3 style="font-size:13px; color:var(--accent); margin-bottom:4px;" data-i18n="timing.v">Vertical</h3>
           <div class="form-row">
-            <div class="form-group"><label>VSW</label><input type="number" id="vsw" value="4" min="1"></div>
-            <div class="form-group"><label>VBP</label><input type="number" id="vbp" value="20" min="1"></div>
-            <div class="form-group"><label>VACT</label><input type="number" id="vact" value="320" min="1"></div>
-            <div class="form-group"><label>VFP</label><input type="number" id="vfp" value="10" min="1"></div>
+            <div class="form-group"><label data-i18n="timing.vsw">VSW</label><input type="number" id="vsw" value="4" min="1"></div>
+            <div class="form-group"><label data-i18n="timing.vbp">VBP</label><input type="number" id="vbp" value="20" min="1"></div>
+            <div class="form-group"><label data-i18n="timing.vact">VACT</label><input type="number" id="vact" value="320" min="1"></div>
+            <div class="form-group"><label data-i18n="timing.vfp">VFP</label><input type="number" id="vfp" value="10" min="1"></div>
           </div>
         </div>
       </div>
       <div class="form-row mt-8">
-        <div class="form-group"><label>Target FPS</label><input type="number" id="fps" value="60" min="1" max="480"></div>
-        <button class="btn btn-primary" id="btnCalcClk">Calculate Pixel Clock</button>
+        <div class="form-group"><label data-i18n="timing.fps">Target FPS</label><input type="number" id="fps" value="60" min="1" max="480"></div>
+        <button class="btn btn-primary" id="btnCalcClk" data-i18n="timing.calcClk">Calculate Pixel Clock</button>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Pixel Clock (KHz)</label><input type="number" id="clkResult" readonly style="width:120px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius); color:var(--accent); font-weight:600; font-size:15px; padding:6px 10px;"></div>
+        <div class="form-group"><label data-i18n="timing.clkRes">Pixel Clock (KHz)</label><input type="number" id="clkResult" readonly style="width:120px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius); color:var(--accent); font-weight:600; font-size:15px; padding:6px 10px;"></div>
       </div>
     </div>
   </div>
 
   <div class="section">
-    <div class="section-header">Signal Polarity</div>
+    <div class="section-header" data-i18n="timing.pol">Signal Polarity</div>
     <div class="section-body">
       <div class="form-row">
-        <div class="form-group"><label>HSYNC</label><select id="polHs"><option value="0">Low Active</option><option value="1">High Active</option></select></div>
-        <div class="form-group"><label>VSYNC</label><select id="polVs"><option value="0">Low Active</option><option value="1">High Active</option></select></div>
-        <div class="form-group"><label>DE</label><select id="polDe"><option value="0">Low Active</option><option value="1">High Active</option></select></div>
-        <div class="form-group"><label>CLK</label><select id="polClk"><option value="0">Rising Edge</option><option value="1">Falling Edge</option></select></div>
+        <div class="form-group"><label data-i18n="timing.hsync">HSYNC</label><select id="polHs"><option value="0" data-i18n="timing.low">Low Active</option><option value="1" data-i18n="timing.high">High Active</option></select></div>
+        <div class="form-group"><label data-i18n="timing.vsync">VSYNC</label><select id="polVs"><option value="0" data-i18n="timing.low">Low Active</option><option value="1" data-i18n="timing.high">High Active</option></select></div>
+        <div class="form-group"><label data-i18n="timing.de">DE</label><select id="polDe"><option value="0" data-i18n="timing.low">Low Active</option><option value="1" data-i18n="timing.high">High Active</option></select></div>
+        <div class="form-group"><label data-i18n="timing.clk">CLK</label><select id="polClk"><option value="0" data-i18n="timing.rising">Rising Edge</option><option value="1" data-i18n="timing.falling">Falling Edge</option></select></div>
       </div>
     </div>
   </div>
 
   <div class="section">
-    <div class="section-header">DSI Settings</div>
+    <div class="section-header" data-i18n="timing.dsi">DSI Settings</div>
     <div class="section-body">
       <div class="form-row">
         <div class="form-group flex items-center" style="flex-direction:row; gap:6px;">
           <input type="checkbox" id="chkDsi">
-          <label for="chkDsi" style="font-size:13px; color:var(--text); cursor:pointer;">Enable DSI</label>
+          <label for="chkDsi" style="font-size:13px; color:var(--text); cursor:pointer;" data-i18n="timing.enDsi">Enable DSI</label>
         </div>
-        <div class="form-group"><label>Lanes</label><input type="number" id="dsiLanes" value="4" min="1" max="8" disabled></div>
-        <div class="form-group"><label>Color Format (bits)</label><select id="dsiColorBits" disabled><option>16</option><option selected>18</option><option>24</option></select></div>
-        <button class="btn btn-primary" id="btnCalcDsi" disabled>Calculate DSI Bitrate</button>
+        <div class="form-group"><label data-i18n="timing.lanes">Lanes</label><input type="number" id="dsiLanes" value="4" min="1" max="8" disabled></div>
+        <div class="form-group"><label data-i18n="timing.bits">Color Format (bits)</label><select id="dsiColorBits" disabled><option>16</option><option selected>18</option><option>24</option></select></div>
+        <button class="btn btn-primary" id="btnCalcDsi" disabled data-i18n="timing.calcDsi">Calculate DSI Bitrate</button>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>DSI Bitrate (Mbps)</label><input type="number" id="dsiResult" readonly style="width:140px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius); color:var(--accent); font-weight:600; padding:6px 10px;"></div>
+        <div class="form-group"><label data-i18n="timing.dsiRes">DSI Bitrate (Mbps)</label><input type="number" id="dsiResult" readonly style="width:140px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius); color:var(--accent); font-weight:600; padding:6px 10px;"></div>
       </div>
     </div>
   </div>
 
   <div class="section">
-    <div class="section-header">Configuration Script</div>
+    <div class="section-header" data-i18n="timing.script">Configuration Script</div>
     <div class="section-body">
-      <button class="btn btn-primary" id="btnGenScript">Generate Config Script</button>
-      <div class="dpi-result" id="configOutput">Click "Generate Config Script" to produce timing configuration.</div>
-      <button class="btn btn-sm btn-secondary mt-8" id="btnCopyScript">Copy to Clipboard</button>
+      <button class="btn btn-primary" id="btnGenScript" data-i18n="timing.genScr">Generate Config Script</button>
+      <div class="dpi-result" id="configOutput" data-i18n="timing.scrDef">Click "Generate Config Script" to produce timing configuration.</div>
+      <button class="btn btn-sm btn-secondary mt-8" id="btnCopyScript" data-i18n="timing.cpyScr">Copy to Clipboard</button>
     </div>
   </div>
 </div>
@@ -397,24 +398,24 @@ input[type="checkbox"] { accent-color: var(--accent); }
 <!-- ============ TAB: ABOUT ============ -->
 <div id="tab-about" class="tab-content">
   <div class="section">
-    <div class="section-header">About LCD Test Patterns</div>
+    <div class="section-header" data-i18n="about.title">About LCD Test Patterns</div>
     <div class="section-body" style="line-height:1.8;">
-      <p><strong>LCD Test Patterns</strong> is a web-based tool for generating LCD display test images. It is a port of the open-source C# Windows Forms application <em>TestPictrueGenerator</em>.</p>
-      <p style="margin-top:12px;">Features:</p>
+      <p data-i18n="about.p1"><strong>LCD Test Patterns</strong> is a web-based tool for generating LCD display test images. It is a port of the open-source C# Windows Forms application <em>TestPictrueGenerator</em>.</p>
+      <p style="margin-top:12px;" data-i18n="about.features">Features:</p>
       <ul style="padding-left:20px; color:var(--text-dim);">
-        <li>Standard test patterns: pure colors, gray gradients, color bars</li>
-        <li>LCD characterization: crosstalk, flicker, pixel response</li>
-        <li>Scale/ruler patterns for pixel mapping</li>
-        <li>AllRGB images with unique colors per pixel</li>
-        <li>DPI timing calculator for display driver configuration</li>
-        <li>DSI bitrate calculation</li>
-        <li>Cut panel mode for partial-screen displays</li>
+        <li data-i18n="about.f1">Standard test patterns: pure colors, gray gradients, color bars</li>
+        <li data-i18n="about.f2">LCD characterization: crosstalk, flicker, pixel response</li>
+        <li data-i18n="about.f3">Scale/ruler patterns for pixel mapping</li>
+        <li data-i18n="about.f4">AllRGB images with unique colors per pixel</li>
+        <li data-i18n="about.f5">DPI timing calculator for display driver configuration</li>
+        <li data-i18n="about.f6">DSI bitrate calculation</li>
+        <li data-i18n="about.f7">Cut panel mode for partial-screen displays</li>
       </ul>
-      <p style="margin-top:12px;">Built for LCD debug engineers, display driver developers, and hardware validation teams.</p>
+      <p style="margin-top:12px;" data-i18n="about.audience">Built for LCD debug engineers, display driver developers, and hardware validation teams.</p>
       <p style="margin-top:16px; color:var(--text-dim); font-size:13px;">
-        Original C# project by <a href="mailto:martlet.zhu@gmail.com">Martlet Zhu</a> &bull;
-        Web port by <a href="https://github.com/Martlet-Tech">Martlet-Tech</a> &bull;
-        <a href="https://github.com/Martlet-Tech/lcd-test-patterns">View on GitHub</a>
+        <span data-i18n="about.credit">Original C# project by</span> <a href="mailto:martlet.zhu@gmail.com">Martlet Zhu</a> &bull;
+        <span data-i18n="about.webport">Web port by</span> <a href="https://github.com/Martlet-Tech">Martlet-Tech</a> &bull;
+        <a href="https://github.com/Martlet-Tech/lcd-test-patterns" data-i18n="about.view">View on GitHub</a>
       </p>
     </div>
   </div>
@@ -476,9 +477,110 @@ const PATTERNS = [
 ];
 
 // ===================================================================
-// GENERATOR FUNCTIONS
+// INTERNATIONALIZATION (i18n)
 // ===================================================================
-// Pre-load reference images
+let _lang = localStorage.getItem('lang') || 'zh';
+
+function t(key) { return (L10N[_lang] && L10N[_lang][key]) !== undefined ? L10N[_lang][key] : key; }
+
+function toggleLang() {
+  _lang = _lang === 'zh' ? 'en' : 'zh';
+  localStorage.setItem('lang', _lang);
+  applyI18n();
+}
+
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-value]').forEach(el => { el.value = t(el.dataset.i18nValue); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
+  buildPatternList();
+  const rc = document.getElementById('resultCount');
+  if (rc && window._lastResults) rc.textContent = '(' + window._lastResults.length + ' ' + t('images') + ')';
+  const btn = document.getElementById('btnLang');
+  if (btn) { btn.textContent = t('lang'); btn.title = t('lang.title'); }
+}
+
+const L10N = {
+en: {
+'lang':'EN','lang.title':'Switch to Chinese',
+'title':'LCD Test Patterns','subtitle':'Display Test Image Generator — for LCD panel debug & characterization',
+'github':'GitHub','ver':'v1.0',
+'tab.patterns':'Test Patterns','tab.timing':'DPI Timing Calculator','tab.about':'About',
+'res.title':'Resolution','res.preset':'Preset','res.custom':'Custom','res.width':'Width','res.height':'Height','res.swap':'Swap',
+'res.cutPanel':'Cut Panel Mode','res.visH':'Visible Height','res.totalH':'Total Height',
+'res.fmt':'Format:','fmt.bmp':'BMP (24-bit)','fmt.png':'PNG','fmt.jpeg':'JPEG',
+'pat.title':'Test Patterns','pat.selected':'selected','pat.selAll':'Select All','pat.deselAll':'Deselect All','pat.detail':'Detail Mode (10 pics)','pat.simple':'Simple Mode (5 pics)',
+'cat.Detail Mode':'Detail Mode','cat.Simple Mode':'Simple Mode','cat.Common Patterns':'Common Patterns','cat.CrossTalk':'CrossTalk','cat.Flicker':'Flicker','cat.Gradient':'Gradient',
+'pat.D01':'1. Black Frame','pat.D02':'2. White','pat.D03':'3. Red','pat.D04':'4. Green','pat.D05':'5. Blue','pat.D06':'6. Black','pat.D07':'7. 50% Gray','pat.D08':'8. Gray Gradient + Crosstalk','pat.D09':'9. Color Bar','pat.D10':'10. Sample Picture',
+'pat.S01':'1. Black Frame','pat.S02':'2. White','pat.S03':'3. Color Bar','pat.S04':'4. Gray Gradient + Crosstalk','pat.S05':'5. Black',
+'pat.C01':'Scale / Ruler','pat.C02':'Frame + Triangle','pat.C03':'Chess Board','pat.C04':'H-Line (horizontal stripes)','pat.C05':'V-Line (vertical stripes)','pat.C06':'AllRGB (unique colors)',
+'pat.X01':'HV CrossTalk (center block)','pat.X02':'H CrossTalk (side blocks)','pat.X03':'V CrossTalk (top/bottom blocks)',
+'pat.F01':'Flicker Pattern (block)','pat.F02':'Flicker H-Line','pat.F03':'Flicker V-Line',
+'pat.G01':'Gradient',
+'p.frameWidth':'Width','p.isCircle':'Circle','p.gridSize':'Grid Size','p.stripeWidth':'Width',
+'grad.title':'Gradient Settings','grad.start':'Start Color','grad.end':'End Color','grad.dir':'Direction',
+'grad.LR':'Left→Right','grad.RL':'Right→Left','grad.UD':'Up→Down','grad.DU':'Down→Up','grad.LU-RD':'↘ Diagonal','grad.RD-LU':'↖ Diagonal','grad.RU-LD':'↙ Diagonal','grad.LD-RU':'↗ Diagonal',
+'flick.title':'Flicker / Pattern Colors','flick.ca':'Color A','flick.cb':'Color B','flick.bs':'Block Size',
+'btn.gen':'Generate Patterns','btn.zip':'Download All as ZIP',
+'btn.copy':'Copy','btn.svAs':'Save As...','btn.dl':'Download','btn.copied':'Copied!','btn.fail':'Failed',
+'res.gen':'Generated Patterns','res.empty1':'Click “Generate Patterns” to create test images.','res.empty2':'No patterns selected. Check some patterns above and try again.',
+'res.tip':'To save without Windows security warning:','res.tip1':'1. Click Copy button','res.tip2':'2. Open your folder','res.tip3':'3. Press Ctrl+V (PNG, no Zone Identifier)',
+'timing.title':'DPI Timing Parameters','timing.h':'Horizontal','timing.v':'Vertical',
+'timing.hsw':'HSW','timing.hbp':'HBP','timing.hact':'HACT','timing.hfp':'HFP','timing.vsw':'VSW','timing.vbp':'VBP','timing.vact':'VACT','timing.vfp':'VFP',
+'timing.fps':'Target FPS','timing.calcClk':'Calculate Pixel Clock','timing.clkRes':'Pixel Clock (KHz)',
+'timing.pol':'Signal Polarity','timing.hsync':'HSYNC','timing.vsync':'VSYNC','timing.de':'DE','timing.clk':'CLK',
+'timing.low':'Low Active','timing.high':'High Active','timing.rising':'Rising Edge','timing.falling':'Falling Edge',
+'timing.dsi':'DSI Settings','timing.enDsi':'Enable DSI','timing.lanes':'Lanes','timing.bits':'Color Format (bits)','timing.calcDsi':'Calculate DSI Bitrate','timing.dsiRes':'DSI Bitrate (Mbps)',
+'timing.script':'Configuration Script','timing.genScr':'Generate Config Script','timing.cpyScr':'Copy to Clipboard','timing.scrDef':'Click “Generate Config Script” to produce timing configuration.',
+'about.title':'About LCD Test Patterns',
+'about.p1':'LCD Test Patterns is a web-based tool for generating LCD display test images. It is a port of the open-source C# Windows Forms application TestPictrueGenerator.',
+'about.features':'Features:','about.f1':'Standard test patterns: pure colors, gray gradients, color bars','about.f2':'LCD characterization: crosstalk, flicker, pixel response','about.f3':'Scale/ruler patterns for pixel mapping','about.f4':'AllRGB images with unique colors per pixel','about.f5':'DPI timing calculator for display driver configuration','about.f6':'DSI bitrate calculation','about.f7':'Cut panel mode for partial-screen displays',
+'about.audience':'Built for LCD debug engineers, display driver developers, and hardware validation teams.',
+'about.credit':'Original C# project by','about.webport':'Web port by','about.view':'View on GitHub',
+'images':'images',
+'img.tt':'Right-click → Save as','copy.tt':'Copy to clipboard, then Ctrl+V in folder (no Windows warning)','save.tt':'Native save dialog, bypasses download manager',
+},
+zh: {
+'lang':'汉','lang.title':'切换到英文',
+'title':'LCD 测试图案','subtitle':'显示屏测试图像生成器 — 用于 LCD 面板调试与特性分析',
+'github':'GitHub','ver':'v1.0',
+'tab.patterns':'测试图案','tab.timing':'DPI 时序计算器','tab.about':'关于',
+'res.title':'分辨率','res.preset':'预设','res.custom':'自定义','res.width':'宽','res.height':'高','res.swap':'交换',
+'res.cutPanel':'切割面板模式','res.visH':'可视高度','res.totalH':'总高度',
+'res.fmt':'格式:','fmt.bmp':'BMP (24位)','fmt.png':'PNG','fmt.jpeg':'JPEG',
+'pat.title':'测试图案','pat.selected':'已选','pat.selAll':'全选','pat.deselAll':'取消全选','pat.detail':'详细模式 (10张)','pat.simple':'简洁模式 (5张)',
+'cat.Detail Mode':'详细模式','cat.Simple Mode':'简洁模式','cat.Common Patterns':'通用图案','cat.CrossTalk':'串扰','cat.Flicker':'闪烁','cat.Gradient':'渐变',
+'pat.D01':'1. 黑色边框','pat.D02':'2. 白色','pat.D03':'3. 红色','pat.D04':'4. 绿色','pat.D05':'5. 蓝色','pat.D06':'6. 黑色','pat.D07':'7. 50% 灰度','pat.D08':'8. 灰阶渐变+串扰','pat.D09':'9. 彩色渐变条','pat.D10':'10. 示例图',
+'pat.S01':'1. 黑色边框','pat.S02':'2. 白色','pat.S03':'3. 彩色渐变条','pat.S04':'4. 灰阶渐变+串扰','pat.S05':'5. 黑色',
+'pat.C01':'刻度/标尺','pat.C02':'边框+三角','pat.C03':'棋盘格','pat.C04':'横线(水平条纹)','pat.C05':'线线(垂直条纹)','pat.C06':'AllRGB(全色彩)',
+'pat.X01':'HV串扰(中心块)','pat.X02':'H串扰(左右块)','pat.X03':'V串扰(上下块)',
+'pat.F01':'闪烁图案(块)','pat.F02':'闪烁横线','pat.F03':'闪烁线线',
+'pat.G01':'渐变',
+'p.frameWidth':'宽度','p.isCircle':'圆形','p.gridSize':'网格大小','p.stripeWidth':'宽度',
+'grad.title':'渐变设置','grad.start':'起始色','grad.end':'结束色','grad.dir':'方向',
+'grad.LR':'左→右','grad.RL':'右→左','grad.UD':'上→下','grad.DU':'下→上','grad.LU-RD':'↘ 对角线','grad.RD-LU':'↖ 对角线','grad.RU-LD':'↙ 对角线','grad.LD-RU':'↗ 对角线',
+'flick.title':'闪烁/图案颜色','flick.ca':'颜色A','flick.cb':'颜色B','flick.bs':'块大小',
+'btn.gen':'生成图案','btn.zip':'全部下载为ZIP',
+'btn.copy':'复制','btn.svAs':'另存为...','btn.dl':'下载','btn.copied':'已复制!','btn.fail':'失败',
+'res.gen':'已生成图案','res.empty1':'点击“生成图案”创建测试图像。','res.empty2':'未选择图案，请在上方勾选后重试。',
+'res.tip':'保存时不出现Windows安全警告:','res.tip1':'1. 点击复制按钮','res.tip2':'2. 打开文件夹','res.tip3':'3. 按Ctrl+V粘贴为PNG(无区域标识)',
+'timing.title':'DPI时序参数','timing.h':'水平','timing.v':'垂直',
+'timing.hsw':'HSW','timing.hbp':'HBP','timing.hact':'HACT','timing.hfp':'HFP','timing.vsw':'VSW','timing.vbp':'VBP','timing.vact':'VACT','timing.vfp':'VFP',
+'timing.fps':'目标帧率','timing.calcClk':'计算像素时钟','timing.clkRes':'像素时钟(KHz)',
+'timing.pol':'信号极性','timing.hsync':'HSYNC','timing.vsync':'VSYNC','timing.de':'DE','timing.clk':'CLK',
+'timing.low':'低电平有效','timing.high':'高电平有效','timing.rising':'上升沿','timing.falling':'下降沿',
+'timing.dsi':'DSI设置','timing.enDsi':'启用DSI','timing.lanes':'通道数','timing.bits':'色彩格式(位)','timing.calcDsi':'计算DSI比特率','timing.dsiRes':'DSI比特率(Mbps)',
+'timing.script':'配置脚本','timing.genScr':'生成配置脚本','timing.cpyScr':'复制到剪贴板','timing.scrDef':'点击“生成配置脚本”生成时序配置。',
+'about.title':'关于LCD测试图案',
+'about.p1':'LCD Test Patterns 是一款基于网页的显示屏测试图像生成工具。它是开源C# Windows Forms 应用程序 TestPictrueGenerator 的移植版本。',
+'about.features':'功能特性:','about.f1':'标准测试图案：纯色、灰阶渐变、彩色渐变条','about.f2':'LCD特性分析：串扰、闪烁、像素响应','about.f3':'刻度/标尺图案用于像素映射','about.f4':'AllRGB全色彩图像，每像素独特色彩','about.f5':'DPI时序计算器，用于显示驱动配置','about.f6':'DSI比特率计算','about.f7':'切割面板模式，支持部分屏显示',
+'about.audience':'专为LCD调试工程师、显示驱动开发者和硬件验证团队打造。',
+'about.credit':'原始C#项目作者','about.webport':'Web移植','about.view':'在GitHub上查看',
+'images':'张',
+'img.tt':'右键 → 另存为','copy.tt':'复制到剪贴板，然后在文件夹中Ctrl+V粘贴(无安全警告)','save.tt':'系统另存为对话框，绕过浏览器下载管理器',
+}
+};
 (function() {
   const all = new Image();
   all.onload = () => { window._imgAll = all; };
@@ -933,12 +1035,12 @@ function generate() {
   document.getElementById('resultsPlaceholder').style.display = 'none';
 
   if (results.length === 0) {
-    gallery.innerHTML = '<div class="empty-state"><p>No patterns selected. Check some patterns above and try again.</p></div>';
-    count.textContent = '(0 images)';
+    gallery.innerHTML = '<div class="empty-state"><p>' + t('res.empty2') + '</p></div>';
+    count.textContent = '(0 ' + t('images') + ')';
     return;
   }
 
-  count.textContent = `(${results.length} images)`;
+  count.textContent = `(${results.length} ${t('images')})`;
   results.forEach(r => {
     const div = document.createElement('div');
     div.className = 'gallery-item';
@@ -948,7 +1050,7 @@ function generate() {
     const img = document.createElement('img');
     img.src = previewUrl;
     img.alt = r.name;
-    img.title = 'Right-click -> Save as';
+    img.title = t('img.tt');
     img.style.cursor = 'pointer';
     img.style.display = 'block';
     img.style.width = '100%';
@@ -965,25 +1067,25 @@ function generate() {
 
     const copyBtn = document.createElement('button');
     copyBtn.className = 'btn btn-sm btn-primary';
-    copyBtn.textContent = 'Copy';
-    copyBtn.title = 'Copy to clipboard, then Ctrl+V in folder (no Windows warning)';
+    copyBtn.textContent = t('btn.copy');
+    copyBtn.title = t('copy.tt');
     copyBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
       try {
         const blob = await canvasToBlob(r.canvas, 'png');
         await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-        copyBtn.textContent = 'Copied!';
-        setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1500);
+        copyBtn.textContent = t('btn.copied');
+        setTimeout(() => { copyBtn.textContent = t('btn.copy'); }, 1500);
       } catch(err) {
-        copyBtn.textContent = 'Failed';
-        setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+        copyBtn.textContent = t('btn.fail');
+        setTimeout(() => { copyBtn.textContent = t('btn.copy'); }, 2000);
       }
     });
 
     const saveBtn = document.createElement('button');
     saveBtn.className = 'btn btn-sm btn-secondary';
-    saveBtn.textContent = 'Save As...';
-    saveBtn.title = 'Native save dialog, bypasses download manager';
+    saveBtn.textContent = t('btn.svAs');
+    saveBtn.title = t('save.tt');
     saveBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
       try {
@@ -1006,7 +1108,7 @@ function generate() {
 
     const dlBtn = document.createElement('button');
     dlBtn.className = 'btn btn-sm btn-secondary';
-    dlBtn.textContent = 'Download';
+    dlBtn.textContent = t('btn.dl');
     dlBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
       const blob = await canvasToBlob(r.canvas, r.format);
@@ -1088,6 +1190,9 @@ document.addEventListener('keydown', (e) => {
 // ===================================================================
 function buildPatternList() {
   const container = document.getElementById('patternList');
+  // Save checked state
+  const checked = {};
+  container.querySelectorAll('input[type="checkbox"]').forEach(cb => { checked[cb.dataset.patternId] = cb.checked; });
   container.innerHTML = '';
   let lastCat = '';
   PATTERNS.forEach(p => {
@@ -1095,7 +1200,7 @@ function buildPatternList() {
       const catDiv = document.createElement('div');
       catDiv.className = 'pattern-category-label' + (p.cat === 'Detail Mode' || p.cat === 'Simple Mode' ? ' cat-highlight' : '');
       const count = PATTERNS.filter(x => x.cat === p.cat).length;
-      catDiv.innerHTML = `${p.cat} <span class="badge">${count}</span>`;
+      catDiv.innerHTML = t('cat.'+p.cat) + ' <span class="badge">' + count + '</span>';
       container.appendChild(catDiv);
       lastCat = p.cat;
     }
@@ -1104,8 +1209,9 @@ function buildPatternList() {
     const cb = document.createElement('input');
     cb.type = 'checkbox';
     cb.dataset.patternId = p.id;
+    if (checked[p.id]) cb.checked = true;
     const span = document.createElement('span');
-    span.textContent = p.label;
+    span.textContent = t('pat.'+p.id);
 
     item.appendChild(cb);
     item.appendChild(span);
@@ -1122,11 +1228,11 @@ function buildPatternList() {
           chk.id = 'p_'+p.id+'_'+key;
           chk.checked = conf.def;
           lbl.appendChild(chk);
-          lbl.appendChild(document.createTextNode(conf.label));
+          lbl.appendChild(document.createTextNode(t('p.'+key)));
           paramsDiv.appendChild(lbl);
         } else {
           const lbl = document.createElement('label');
-          lbl.textContent = conf.label;
+          lbl.textContent = t('p.'+key);
           const inp = document.createElement('input');
           inp.type = 'number';
           inp.id = 'p_'+p.id+'_'+key;
@@ -1149,7 +1255,7 @@ function buildPatternList() {
 
 function updateSelectedCount() {
   const n = document.querySelectorAll('#patternList input[type="checkbox"]:checked').length;
-  document.getElementById('selectedCount').textContent = n + ' selected';
+  document.getElementById('selectedCount').textContent = n + ' ' + t('pat.selected');
 }
 
 function selectAllInView() {
@@ -1264,6 +1370,7 @@ function generateScript() {
 // ===================================================================
 document.addEventListener('DOMContentLoaded', () => {
   buildPatternList();
+  applyI18n();
 
   // Tab switching
   document.querySelectorAll('.tab-nav button').forEach(btn => {
