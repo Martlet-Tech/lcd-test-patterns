@@ -7,6 +7,13 @@
 
 Designed for LCD debug engineers, display driver developers, and hardware validation teams. No server, no build step, no dependencies — open `index.html` in any browser or use the GitHub Pages hosted version.
 
+## Screenshots
+
+| English | Chinese |
+|---------|---------|
+| ![header-en](screenshot/header-en.png) | ![header-zh](screenshot/header-zh.png) |
+| ![preview-en](screenshot/preview-en.png) | ![preview-zh](screenshot/preview-zh.png) |
+
 ## Features
 
 ### Test Pattern Generation
