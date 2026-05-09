@@ -18,26 +18,26 @@ a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
 /* header */
-header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
-header h1 { font-size: 20px; font-weight: 600; }
+header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+header h1 { font-size: 18px; font-weight: 600; }
 header h1 span { color: var(--accent); }
 header .subtitle { font-size: 13px; color: var(--text-dim); }
 
 /* tabs */
 .tab-nav { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 16px; gap: 0; }
-.tab-nav button { padding: 12px 20px; border: none; background: none; color: var(--text-dim); font-size: 14px; cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; }
+.tab-nav button { padding: 8px 16px; border: none; background: none; color: var(--text-dim); font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; }
 .tab-nav button:hover { color: var(--text); background: rgba(255,255,255,.05); }
 .tab-nav button.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
-.tab-content { display: none; padding: 20px 24px; }
+.tab-content { display: none; padding: 12px 16px; }
 .tab-content.active { display: block; }
 
 /* sections */
-.section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 16px; overflow: hidden; }
-.section-header { padding: 12px 16px; background: rgba(255,255,255,.03); border-bottom: 1px solid var(--border); font-weight: 600; font-size: 14px; display: flex; align-items: center; justify-content: space-between; }
-.section-body { padding: 16px; }
+.section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 8px; overflow: hidden; }
+.section-header { padding: 8px 12px; background: rgba(255,255,255,.03); border-bottom: 1px solid var(--border); font-weight: 600; font-size: 13px; display: flex; align-items: center; justify-content: space-between; }
+.section-body { padding: 10px; }
 
 /* form */
-.form-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; margin-bottom: 10px; }
+.form-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin-bottom: 6px; }
 .form-row:last-child { margin-bottom: 0; }
 .form-group { display: flex; flex-direction: column; gap: 4px; }
 .form-group label { font-size: 12px; color: var(--text-dim); font-weight: 500; }
@@ -49,14 +49,15 @@ header .subtitle { font-size: 13px; color: var(--text-dim); }
 input[type="checkbox"] { accent-color: var(--accent); }
 
 /* pattern checkbox list */
-.pattern-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 6px; }
-.pattern-item { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 13px; transition: background .1s; }
+.pattern-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 3px; }
+.pattern-item { display: flex; align-items: center; gap: 6px; padding: 3px 6px; border-radius: 3px; cursor: pointer; font-size: 12px; transition: background .1s; }
 .pattern-item:hover { background: rgba(255,255,255,.05); }
 .pattern-item .params { margin-left: auto; display: flex; gap: 6px; align-items: center; }
-.pattern-item .params input[type="number"] { width: 60px; padding: 3px 6px; font-size: 12px; }
+.pattern-item .params input[type="number"] { width: 50px; padding: 2px 4px; font-size: 11px; }
 .pattern-item .params label { font-size: 11px; color: var(--text-dim); }
 .pattern-item.disabled { opacity: .5; pointer-events: none; }
-.pattern-category-label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-dim); letter-spacing: .5px; padding: 8px 10px 4px; grid-column: 1 / -1; border-bottom: 1px solid var(--border); margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+.pattern-category-label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-dim); letter-spacing: .5px; padding: 4px 8px 2px; grid-column: 1 / -1; border-bottom: 1px solid var(--border); margin-bottom: 2px; display: flex; align-items: center; gap: 8px; }
+.pattern-category-label.cat-highlight { background: rgba(88,166,255,.12); border-left: 3px solid var(--accent); color: var(--accent); font-size: 12px; padding: 5px 10px 3px; }
 .pattern-category-label .badge { font-size: 10px; background: var(--border); padding: 1px 6px; border-radius: 8px; font-weight: 400; text-transform: none; letter-spacing: 0; }
 
 /* radio group */
@@ -80,10 +81,10 @@ input[type="checkbox"] { accent-color: var(--accent); }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 
 /* results gallery */
-.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
 .gallery-item { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; }
 .gallery-item canvas { width: 100%; aspect-ratio: attr(data-w) / attr(data-h); display: block; background: #000; }
-.gallery-item .info { padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; }
+.gallery-item .info { padding: 6px 10px; display: flex; align-items: center; justify-content: space-between; }
 .gallery-item .info .name { font-size: 13px; font-weight: 500; }
 .gallery-item .info .size { font-size: 11px; color: var(--text-dim); }
 
@@ -229,8 +230,8 @@ input[type="checkbox"] { accent-color: var(--accent); }
       <div class="quick-select">
         <button class="btn btn-sm btn-secondary" onclick="selectAllInView()">Select All</button>
         <button class="btn btn-sm btn-secondary" onclick="deselectAll()">Deselect All</button>
-        <button class="btn btn-sm btn-secondary" onclick="selectDetailMode()">Detail Mode (10 pics)</button>
-        <button class="btn btn-sm btn-secondary" onclick="selectSimpleMode()">Simple Mode (5 pics)</button>
+        <button class="btn btn-sm btn-primary" onclick="selectDetailMode()">Detail Mode (10 pics)</button>
+        <button class="btn btn-sm btn-success" onclick="selectSimpleMode()">Simple Mode (5 pics)</button>
       </div>
       <div class="pattern-grid" id="patternList">
         <!-- populated by JS -->
@@ -302,10 +303,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
     <div class="section">
       <div class="section-header">
         <span>Generated Patterns <span class="text-dim text-sm" id="resultCount"></span></span>
-        <div class="flex gap-8">
-          <button class="btn btn-sm btn-success" id="btnDownloadAll">Download All as ZIP</button>
-          <span class="text-dim text-sm" style="font-size:11px;">Use <strong>Copy</strong> button (clipboard) to avoid Windows download blocking entirely</span>
-        </div>
+        <button class="btn btn-success" id="btnDownloadAll" style="padding:12px 32px; font-size:15px;">Download All as ZIP</button>
       </div>
       <div class="section-body">
         <div id="resultsPlaceholder" class="empty-state">
@@ -1095,7 +1093,7 @@ function buildPatternList() {
   PATTERNS.forEach(p => {
     if (p.cat !== lastCat) {
       const catDiv = document.createElement('div');
-      catDiv.className = 'pattern-category-label';
+      catDiv.className = 'pattern-category-label' + (p.cat === 'Detail Mode' || p.cat === 'Simple Mode' ? ' cat-highlight' : '');
       const count = PATTERNS.filter(x => x.cat === p.cat).length;
       catDiv.innerHTML = `${p.cat} <span class="badge">${count}</span>`;
       container.appendChild(catDiv);
