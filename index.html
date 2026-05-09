@@ -436,7 +436,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
 const PATTERNS = [
   // -- Detail Mode --
   { id:'D01', cat:'Detail Mode', label:'1. Black Frame', gen:'frame',
-    params: { frameWidth: { label:'Width', def:4, min:1, max:200 }, isCircle: { label:'Circle', def:false, type:'checkbox' } } },
+    params: { frameWidth: { label:'Width', def:1, min:1, max:200 }, isCircle: { label:'Circle', def:false, type:'checkbox' } } },
   { id:'D02', cat:'Detail Mode', label:'2. White', gen:'solid', params: { color: { def:'#ffffff', hidden:true } } },
   { id:'D03', cat:'Detail Mode', label:'3. Red', gen:'solid', params: { color: { def:'#ff0000', hidden:true } } },
   { id:'D04', cat:'Detail Mode', label:'4. Green', gen:'solid', params: { color: { def:'#00ff00', hidden:true } } },
@@ -449,7 +449,7 @@ const PATTERNS = [
 
   // -- Simple Mode --
   { id:'S01', cat:'Simple Mode', label:'1. Black Frame', gen:'frame',
-    params: { frameWidth: { label:'Width', def:4, min:1, max:200 }, isCircle: { label:'Circle', def:false, type:'checkbox' } } },
+    params: { frameWidth: { label:'Width', def:1, min:1, max:200 }, isCircle: { label:'Circle', def:false, type:'checkbox' } } },
   { id:'S02', cat:'Simple Mode', label:'2. White', gen:'solid', params: { color: { def:'#ffffff', hidden:true } } },
   { id:'S03', cat:'Simple Mode', label:'3. Color Bar', gen:'colorBar' },
   { id:'S04', cat:'Simple Mode', label:'4. Gray Gradient + Crosstalk', gen:'grayCrosstalk' },
