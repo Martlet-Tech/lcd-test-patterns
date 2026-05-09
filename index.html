@@ -141,6 +141,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
 .empty-state { text-align: center; padding: 40px 20px; color: var(--text-dim); }
 .empty-state svg { width: 64px; height: 64px; margin-bottom: 16px; opacity: .4; }
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
 </head>
 <body>
 
@@ -159,6 +160,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
 <nav class="tab-nav" role="tablist">
   <button class="active" data-tab="patterns" role="tab" data-i18n="tab.patterns">Test Patterns</button>
   <button data-tab="timing" role="tab" data-i18n="tab.timing">DPI Timing Calculator</button>
+  <button data-tab="epd" role="tab" data-i18n="tab.epd">EPD Image Processing</button>
   <button data-tab="about" role="tab" data-i18n="tab.about">About</button>
 </nav>
 
@@ -434,6 +436,107 @@ input[type="checkbox"] { accent-color: var(--accent); }
   </div>
 </div>
 
+<!-- ============ TAB: EPD ============ -->
+<div id="tab-epd" class="tab-content">
+
+  <!-- Input -->
+  <div class="section">
+    <div class="section-header" data-i18n="epd.inputTitle">Input Image</div>
+    <div class="section-body">
+      <div class="form-row">
+        <input type="file" accept="image/*" id="epdFile">
+      </div>
+      <div id="epdFileInfo" class="text-dim text-sm" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- Crop -->
+  <div class="section" id="epdCropSection" style="display:none;">
+    <div class="section-header" data-i18n="epd.crop">Crop</div>
+    <div class="section-body">
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;max-height:400px;">
+        <div id="epdCropPlaceholder" style="padding:40px 20px;text-align:center;color:var(--text-dim);font-size:13px;" data-i18n="epd.cropPlaceholder">Select an image to begin</div>
+        <img id="epdCropImage" style="display:none;max-width:100%;">
+      </div>
+      <div class="form-row mt-8">
+        <button class="btn btn-sm btn-secondary" onclick="epdRotate()" data-i18n="epd.rotate">Rotate 90°</button>
+        <button class="btn btn-sm btn-secondary" onclick="epdFlipH()" data-i18n="epd.flipH">Flip H</button>
+        <button class="btn btn-sm btn-secondary" onclick="epdFlipV()" data-i18n="epd.flipV">Flip V</button>
+        <button class="btn btn-sm btn-secondary" onclick="epdResetCrop()" data-i18n="epd.resetCrop">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div class="section">
+    <div class="section-header" data-i18n="epd.settings">EPD Settings</div>
+    <div class="section-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label data-i18n="res.width">Width</label>
+          <input type="number" id="epdW" value="800" min="1" max="8192">
+        </div>
+        <div class="form-group">
+          <label data-i18n="res.height">Height</label>
+          <input type="number" id="epdH" value="480" min="1" max="8192">
+        </div>
+        <div class="form-group">
+          <label data-i18n="epd.palette">Color Palette</label>
+          <select id="epdPalette">
+            <option value="4c">4-Color (B/W/Y/R)</option>
+            <option value="6c">6-Color (B/W/Y/R/G/B)</option>
+            <option value="7c" selected>7-Color (B/W/Y/R/G/B/O)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label data-i18n="epd.dither">Dither</label>
+          <select id="epdDither">
+            <option value="floyd" data-i18n="epd.floyd">Floyd-Steinberg</option>
+            <option value="none" data-i18n="epd.noDither">None (Direct)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group flex items-center" style="flex-direction:row;gap:8px;flex-wrap:wrap;">
+          <input type="checkbox" id="epdUseLut" checked>
+          <label for="epdUseLut" style="font-size:13px;cursor:pointer;" data-i18n="epd.useLut">LUT Correction</label>
+          <input type="file" accept=".bin" id="epdLutFile" style="font-size:12px;">
+          <span id="epdLutStatus" class="text-dim text-sm"></span>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group flex items-center" style="flex-direction:row;gap:8px;">
+          <span style="font-size:12px;color:var(--text-dim);" data-i18n="epd.palette">Palette:</span>
+          <span id="epdPaletteSwatches"></span>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="btnEpdProcess" data-i18n="epd.process">Process Image</button>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="section">
+    <div class="section-header" data-i18n="epd.result">Result</div>
+    <div class="section-body">
+      <div style="display:flex;gap:16px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:200px;">
+          <div class="text-dim text-sm mb-8" data-i18n="epd.original">Original</div>
+          <canvas id="epdOrigView" style="width:100%;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);"></canvas>
+        </div>
+        <div style="flex:1;min-width:200px;">
+          <div class="text-dim text-sm mb-8" data-i18n="epd.processed">EPD Output</div>
+          <canvas id="epdOutView" style="width:100%;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);"></canvas>
+        </div>
+      </div>
+      <div id="epdStats" class="text-dim text-sm mt-8" style="display:none;"></div>
+      <div class="form-row mt-8">
+        <button class="btn btn-primary" id="btnEpdDlBmp" disabled data-i18n="epd.dlBmp">Download BMP</button>
+        <button class="btn btn-secondary" id="btnEpdDlPng" disabled data-i18n="epd.dlPng">Download PNG</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ============ TAB: ABOUT ============ -->
 <div id="tab-about" class="tab-content">
   <div class="section">
@@ -467,6 +570,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 <script>
 // ===================================================================
 // PATTERN DEFINITIONS
@@ -538,6 +642,14 @@ function applyI18n() {
   if (rc && window._lastResults) rc.textContent = '(' + window._lastResults.length + ' ' + t('images') + ')';
   const btn = document.getElementById('btnLang');
   if (btn) { btn.textContent = t('lang'); btn.title = t('lang.title'); }
+  // Refresh EPD file info if image loaded
+  const info = document.getElementById('epdFileInfo');
+  if (_epdOrigImage && info.style.display !== 'none') {
+    const file = document.getElementById('epdFile').files[0];
+    info.textContent = _lang === 'zh'
+      ? '文件: '+(file ? file.name : '')+' ('+_epdOrigImage.width+'×'+_epdOrigImage.height+')'
+      : 'File: '+(file ? file.name : '')+' ('+_epdOrigImage.width+'×'+_epdOrigImage.height+')';
+  }
 }
 
 function parseUrlParams() {
@@ -590,7 +702,7 @@ en: {
 'lang':'EN','lang.title':'Switch to Chinese',
 'title':'LCD Test Patterns','subtitle':'Display Test Image Generator — for LCD panel debug & characterization',
 'github':'GitHub','ver':'v1.0',
-'tab.patterns':'Test Patterns','tab.timing':'DPI Timing Calculator','tab.about':'About',
+'tab.patterns':'Test Patterns','tab.timing':'DPI Timing Calculator','tab.epd':'EPD Image Processing','tab.about':'About',
 'res.title':'Resolution','res.preset':'Preset','res.custom':'Custom','res.width':'Width','res.height':'Height','res.swap':'Swap',
 'res.cutPanel':'Cut Panel Mode','res.visH':'Visible Height','res.totalH':'Total Height',
 'res.mask':'Mask Mode','res.maskW':'Content W','res.maskH':'Content H','res.maskFill':'Fill:','res.black':'Black','res.white':'White',
@@ -625,12 +737,18 @@ en: {
 'about.credit':'Original C# project by','about.webport':'Web port by','about.view':'View on GitHub',
 'images':'images',
 'img.tt':'Right-click → Save as','copy.tt':'Copy to clipboard, then Ctrl+V in folder (no Windows warning)','save.tt':'Native save dialog, bypasses download manager',
+'epd.inputTitle':'Input Image','epd.settings':'EPD Settings','epd.screenType':'Screen Type',
+'epd.dither':'Dither','epd.floyd':'Floyd-Steinberg','epd.noDither':'None (Direct)',
+'epd.useLut':'LUT Correction','epd.palette':'Palette:',
+'epd.process':'Process Image','epd.result':'Result','epd.original':'Original','epd.processed':'EPD Output',
+'epd.crop':'Crop','epd.cropPlaceholder':'Select an image to begin','epd.rotate':'Rotate 90°','epd.flipH':'Flip H','epd.flipV':'Flip V','epd.resetCrop':'Reset',
+'epd.dlBmp':'Download BMP','epd.dlPng':'Download PNG',
 },
 zh: {
 'lang':'汉','lang.title':'切换到英文',
 'title':'LCD 测试图案','subtitle':'显示屏测试图像生成器 — 用于 LCD 面板调试与特性分析',
 'github':'GitHub','ver':'v1.0',
-'tab.patterns':'测试图案','tab.timing':'DPI 时序计算器','tab.about':'关于',
+'tab.patterns':'测试图案','tab.timing':'DPI 时序计算器','tab.epd':'电子纸图像处理','tab.about':'关于',
 'res.title':'分辨率','res.preset':'预设','res.custom':'自定义','res.width':'宽','res.height':'高','res.swap':'交换',
 'res.cutPanel':'切割面板模式','res.visH':'可视高度','res.totalH':'总高度',
 'res.mask':'遮蔽模式','res.maskW':'内容宽度','res.maskH':'内容高度','res.maskFill':'填充:','res.black':'黑色','res.white':'白色',
@@ -665,7 +783,13 @@ zh: {
 'about.credit':'原始C#项目作者','about.webport':'Web移植','about.view':'在GitHub上查看',
 'images':'张',
 'img.tt':'右键 → 另存为','copy.tt':'复制到剪贴板，然后在文件夹中Ctrl+V粘贴(无安全警告)','save.tt':'系统另存为对话框，绕过浏览器下载管理器',
-}
+'epd.inputTitle':'输入图片','epd.settings':'EPD 设置','epd.screenType':'屏幕类型',
+'epd.dither':'误差扩散','epd.floyd':'Floyd-Steinberg','epd.noDither':'无 (直接)',
+'epd.useLut':'LUT 色彩校正','epd.palette':'调色板:',
+'epd.process':'处理图片','epd.result':'结果','epd.original':'原图','epd.processed':'EPD 输出',
+'epd.crop':'裁剪','epd.cropPlaceholder':'请先选择图片','epd.rotate':'旋转 90°','epd.flipH':'水平翻转','epd.flipV':'垂直翻转','epd.resetCrop':'重置',
+'epd.dlBmp':'下载 BMP','epd.dlPng':'下载 PNG',
+},
 };
 (function() {
   const all = new Image();
@@ -1563,6 +1687,190 @@ function generateScript() {
 }
 
 // ===================================================================
+// EPD IMAGE PROCESSING
+// ===================================================================
+const EPD_SCREENS = {
+  '4c': { palette:[[0,0,0],[255,255,255],[255,255,0],[255,0,0]], colors:['Black','White','Yellow','Red'] },
+  '6c': { palette:[[0,0,0],[255,255,255],[255,255,0],[255,0,0],[0,0,255],[0,255,0]], colors:['Black','White','Yellow','Red','Blue','Green'] },
+  '7c': { palette:[[0,0,0],[255,255,255],[255,255,0],[255,0,0],[0,0,255],[0,255,0],[255,165,0]], colors:['Black','White','Yellow','Red','Blue','Green','Orange'] },
+};
+let _epdLutData = null;
+let _epdOrigImage = null;
+let _epdProcessedCanvas = null;
+let _epdCropper = null;
+
+function updateEpdPalette() {
+  const s = EPD_SCREENS[document.getElementById('epdPalette').value];
+  document.getElementById('epdPaletteSwatches').innerHTML =
+    s.palette.map((c,i) => '<span style="display:inline-block;width:16px;height:16px;border-radius:3px;background:rgb('+c[0]+','+c[1]+','+c[2]+');border:1px solid var(--border);" title="'+s.colors[i]+'"></span>').join('');
+}
+
+function initEpdCropper() {
+  if (_epdCropper) { _epdCropper.destroy(); _epdCropper = null; }
+  const img = document.getElementById('epdCropImage');
+  img.style.display = 'block';
+  document.getElementById('epdCropPlaceholder').style.display = 'none';
+  document.getElementById('epdCropSection').style.display = 'block';
+  const w = parseInt(document.getElementById('epdW').value);
+  const h = parseInt(document.getElementById('epdH').value);
+  _epdCropper = new Cropper(img, {
+    viewMode: 1, dragMode: 'move',
+    aspectRatio: w / h,
+    autoCropArea: 0.9,
+    movable: true, zoomable: true, rotatable: true, scalable: true,
+    cropBoxMovable: false, cropBoxResizable: false,
+    guides: true, center: true, highlight: true, background: true,
+  });
+}
+
+function epdRotate() { if (_epdCropper) _epdCropper.rotate(90); }
+function epdFlipH() { if (_epdCropper) { const d = _epdCropper.getData(); _epdCropper.scaleX(d.scaleX === -1 ? 1 : -1); } }
+function epdFlipV() { if (_epdCropper) { const d = _epdCropper.getData(); _epdCropper.scaleY(d.scaleY === -1 ? 1 : -1); } }
+function epdResetCrop() { if (_epdCropper) _epdCropper.reset(); }
+function epdResyncCrop() {
+  if (_epdOrigImage && document.getElementById('epdCropImage').src) {
+    initEpdCropper();
+  }
+}
+
+function loadEpdLut(file) {
+  const status = document.getElementById('epdLutStatus');
+  const checkbox = document.getElementById('epdUseLut');
+  if (!file) {
+    _epdLutData = null;
+    status.textContent = _lang === 'zh' ? '(无LUT文件)' : '(no LUT file)';
+    checkbox.disabled = true;
+    checkbox.checked = false;
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    _epdLutData = e.target.result;
+    status.textContent = (_lang === 'zh' ? '已加载: ' : 'Loaded: ') + file.name;
+    checkbox.disabled = false;
+    checkbox.checked = true;
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function epdApplyLut(data) {
+  if (!document.getElementById('epdUseLut').checked || !_epdLutData) return new Uint8Array(data);
+  const out = new Uint8Array(data);
+  const gLut = new Uint8Array(_epdLutData, 0x12);
+  for (let i = 0; i < out.length; i += 4) {
+    const r = out[i], g = out[i+1], b = out[i+2];
+    const idx = ((b>>2) + ((g&0xFC)<<4) + ((r&0xFC)<<10)) * 3;
+    out[i]   = gLut[idx+2];
+    out[i+1] = gLut[idx+1];
+    out[i+2] = gLut[idx+0];
+  }
+  return out;
+}
+
+function epdNearestPalette(r, g, b, pal) {
+  let best = 0, bestDist = Infinity;
+  for (let i = 0; i < pal.length; i++) {
+    const dr = r-pal[i][0], dg = g-pal[i][1], db = b-pal[i][2];
+    const d = dr*dr + dg*dg + db*db;
+    if (d < bestDist) { bestDist = d; best = i; }
+  }
+  return [best, pal[best]];
+}
+
+function epdQuantize(imgData, palette, w, h, dither) {
+  if (dither === 'none') {
+    const out = new Uint8Array(w * h);
+    for (let i = 0; i < imgData.length; i += 4)
+      out[i/4] = epdNearestPalette(imgData[i], imgData[i+1], imgData[i+2], palette)[0];
+    return out;
+  }
+  // Floyd-Steinberg
+  const d = new Uint8Array(imgData);
+  const out = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const idx = (y * w + x) * 4;
+      const or = d[idx], og = d[idx+1], ob = d[idx+2];
+      const [pi, pc] = epdNearestPalette(or, og, ob, palette);
+      out[y * w + x] = pi;
+      const er = or - pc[0], eg = og - pc[1], eb = ob - pc[2];
+      const ae = (nx, ny, wt) => {
+        if (nx < 0 || nx >= w || ny < 0 || ny >= h) return;
+        const ni = (ny * w + nx) * 4;
+        d[ni]   = Math.max(0, Math.min(255, d[ni]   + er * wt));
+        d[ni+1] = Math.max(0, Math.min(255, d[ni+1] + eg * wt));
+        d[ni+2] = Math.max(0, Math.min(255, d[ni+2] + eb * wt));
+      };
+      ae(1, 0, 7/16); ae(-1, 1, 3/16); ae(0, 1, 5/16); ae(1, 1, 1/16);
+    }
+  }
+  return out;
+}
+
+function epdBuildOutput(indexBuf, palette, w, h) {
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const ctx = c.getContext('2d');
+  const id = ctx.createImageData(w, h);
+  for (let i = 0; i < indexBuf.length; i++) {
+    const col = palette[indexBuf[i]] || [0,0,0];
+    const p = i * 4;
+    id.data[p] = col[0]; id.data[p+1] = col[1]; id.data[p+2] = col[2]; id.data[p+3] = 255;
+  }
+  ctx.putImageData(id, 0, 0);
+  return c;
+}
+
+function epdProcess() {
+  if (!_epdOrigImage) { alert(t('epd.inputTitle') ? 'Please select an image first.' : '请先选择图片'); return; }
+  epdResyncCrop();
+  const w = parseInt(document.getElementById('epdW').value);
+  const h = parseInt(document.getElementById('epdH').value);
+  const s = EPD_SCREENS[document.getElementById('epdPalette').value];
+  const src = document.createElement('canvas');
+  src.width = w; src.height = h;
+  const sctx = src.getContext('2d');
+  sctx.imageSmoothingEnabled = true;
+  if (_epdCropper) {
+    const cropped = _epdCropper.getCroppedCanvas({ width: w, height: h, imageSmoothingEnabled: true, imageSmoothingQuality: 'high' });
+    sctx.drawImage(cropped, 0, 0);
+  } else {
+    sctx.drawImage(_epdOrigImage, 0, 0, w, h);
+  }
+  const imgData = sctx.getImageData(0, 0, w, h).data;
+  const indexBuf = epdQuantize(epdApplyLut(imgData), s.palette, w, h, document.getElementById('epdDither').value);
+  _epdProcessedCanvas = epdBuildOutput(indexBuf, s.palette, w, h);
+  document.getElementById('epdOrigView').getContext('2d').drawImage(src, 0, 0);
+  document.getElementById('epdOutView').getContext('2d').drawImage(_epdProcessedCanvas, 0, 0);
+  const uniq = new Set(indexBuf).size;
+  const st = document.getElementById('epdStats');
+  st.style.display = 'block';
+  st.textContent = _lang === 'zh'
+    ? '尺寸: '+w+'×'+h+' | 颜色: '+uniq+'/'+s.palette.length+' | 扩散: '+(document.getElementById('epdDither').value === 'floyd' ? 'Floyd-Steinberg' : '无')
+    : 'Size: '+w+'×'+h+' | Colors: '+uniq+'/'+s.palette.length+' | Dither: '+(document.getElementById('epdDither').value === 'floyd' ? 'Floyd-Steinberg' : 'None');
+  document.getElementById('btnEpdDlBmp').disabled = false;
+  document.getElementById('btnEpdDlPng').disabled = false;
+}
+
+function epdDownloadBmp() {
+  if (!_epdProcessedCanvas) return;
+  const blob = encodeBmp(_epdProcessedCanvas);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'epd_'+_epdProcessedCanvas.width+'x'+_epdProcessedCanvas.height+'.bmp';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function epdDownloadPng() {
+  if (!_epdProcessedCanvas) return;
+  const a = document.createElement('a');
+  a.href = _epdProcessedCanvas.toDataURL('image/png');
+  a.download = 'epd_'+_epdProcessedCanvas.width+'x'+_epdProcessedCanvas.height+'.png';
+  a.click();
+}
+
+// ===================================================================
 // EVENT BINDING
 // ===================================================================
 document.addEventListener('DOMContentLoaded', () => {
@@ -1660,6 +1968,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Download all
   document.getElementById('btnDownloadAll').addEventListener('click', downloadAllAsZip);
+
+  // EPD Image Processing
+  document.getElementById('epdFile').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        _epdOrigImage = img;
+        const info = document.getElementById('epdFileInfo');
+        info.style.display = 'block';
+        info.textContent = _lang === 'zh'
+          ? '文件: '+file.name+' ('+img.width+'×'+img.height+')'
+          : 'File: '+file.name+' ('+img.width+'×'+img.height+')';
+        // Set cropper image source and init
+        document.getElementById('epdCropImage').src = img.src;
+        setTimeout(() => initEpdCropper(), 100);
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+  document.getElementById('epdLutFile').addEventListener('change', (e) => { loadEpdLut(e.target.files[0]); });
+  document.getElementById('epdPalette').addEventListener('change', updateEpdPalette);
+  document.getElementById('epdW').addEventListener('change', epdResyncCrop);
+  document.getElementById('epdH').addEventListener('change', epdResyncCrop);
+  document.getElementById('btnEpdProcess').addEventListener('click', epdProcess);
+  document.getElementById('btnEpdDlBmp').addEventListener('click', epdDownloadBmp);
+  document.getElementById('btnEpdDlPng').addEventListener('click', epdDownloadPng);
+  loadEpdLut(null);
+  updateEpdPalette();
 
   // Quick calc on tab2 input change
   document.querySelectorAll('#tab-timing input[type="number"]').forEach(inp => {
