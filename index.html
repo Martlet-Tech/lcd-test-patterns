@@ -501,6 +501,40 @@ function applyI18n() {
   if (btn) { btn.textContent = t('lang'); btn.title = t('lang.title'); }
 }
 
+function parseUrlParams() {
+  const p = new URLSearchParams(window.location.search);
+  if (!p.size) return;
+  if (p.has('lang')) { _lang = p.get('lang'); localStorage.setItem('lang', _lang); }
+  if (p.has('res')) {
+    const r = p.get('res').split(/[,xX]/).map(Number);
+    if (r.length===2 && r[0]>0 && r[1]>0) {
+      document.getElementById('resX').value=r[0]; document.getElementById('resY').value=r[1];
+    }
+  }
+  if (p.has('fmt')) {
+    const f = p.get('fmt');
+    if (['bmp','png','jpeg'].includes(f)) document.querySelector('input[name="fmt"][value="'+f+'"]').checked=true;
+  }
+  if (p.has('patterns')) {
+    const ids = p.get('patterns').split(',').map(s=>s.trim().toUpperCase());
+    PATTERNS.forEach(pt => {
+      const cb = document.querySelector('#patternList input[data-pattern-id="'+pt.id+'"]');
+      if (cb) cb.checked = ids.includes(pt.id);
+    });
+    updateSelectedCount();
+  }
+  if (p.has('gradStart')) document.getElementById('gradStart').value='#'+p.get('gradStart');
+  if (p.has('gradEnd')) document.getElementById('gradEnd').value='#'+p.get('gradEnd');
+  if (p.has('gradDir')) {
+    const el = document.querySelector('input[name="gradDir"][value="'+p.get('gradDir')+'"]');
+    if (el) el.checked=true;
+  }
+  if (p.has('flickA')) document.getElementById('flickColorA').value='#'+p.get('flickA');
+  if (p.has('flickB')) document.getElementById('flickColorB').value='#'+p.get('flickB');
+  if (p.has('flickBs')) document.getElementById('flickBlockSize').value=parseInt(p.get('flickBs'));
+  if (p.get('auto')==='1') setTimeout(generate, 50);
+}
+
 const L10N = {
 en: {
 'lang':'EN','lang.title':'Switch to Chinese',
@@ -1370,6 +1404,7 @@ function generateScript() {
 // ===================================================================
 document.addEventListener('DOMContentLoaded', () => {
   buildPatternList();
+  parseUrlParams();
   applyI18n();
 
   // Tab switching
