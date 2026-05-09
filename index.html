@@ -209,7 +209,8 @@ input[type="checkbox"] { accent-color: var(--accent); }
       <div class="form-row">
         <div class="form-group flex items-center" style="flex-direction:row; gap:10px;">
           <label style="font-size:13px; color:var(--text);">Format:</label>
-          <label style="font-size:13px; font-weight:400;"><input type="radio" name="fmt" value="png" checked> PNG</label>
+          <label style="font-size:13px; font-weight:400;"><input type="radio" name="fmt" value="bmp" checked> BMP (24-bit)</label>
+          <label style="font-size:13px; font-weight:400;"><input type="radio" name="fmt" value="png"> PNG</label>
           <label style="font-size:13px; font-weight:400;"><input type="radio" name="fmt" value="jpeg"> JPEG</label>
         </div>
       </div>
@@ -293,7 +294,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
   <!-- Generate -->
   <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
     <button class="btn btn-primary" id="btnGenerate" style="padding:12px 32px; font-size:15px;">Generate Patterns</button>
-    <span class="text-dim text-sm">Tip: Right-click any image and select "Save image as..." to save without Windows security warning.</span>
+    <span class="text-dim text-sm">Tip: use <strong>Copy</strong> (clipboard, no Windows warning) or <strong>Save As...</strong> (native dialog) buttons.</span>
   </div>
 
   <!-- Results -->
@@ -303,7 +304,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
         <span>Generated Patterns <span class="text-dim text-sm" id="resultCount"></span></span>
         <div class="flex gap-8">
           <button class="btn btn-sm btn-success" id="btnDownloadAll">Download All as ZIP</button>
-          <span class="text-dim text-sm" style="font-size:11px;">If blocked by Windows: right-click individual images above &rarr; Save as</span>
+          <span class="text-dim text-sm" style="font-size:11px;">Use <strong>Copy</strong> button (clipboard) to avoid Windows download blocking entirely</span>
         </div>
       </div>
       <div class="section-body">
@@ -311,6 +312,10 @@ input[type="checkbox"] { accent-color: var(--accent); }
           <p>Click "Generate Patterns" to create test images.</p>
         </div>
         <div class="gallery" id="gallery"></div>
+        <div class="text-dim text-sm mt-16" style="border:1px solid var(--border); border-radius:var(--radius); padding:10px 14px; background:rgba(88,166,255,.05);">
+          <strong>To save without Windows security warning:</strong>
+          &nbsp;1. Click <strong>Copy</strong> button &nbsp; 2. Open your folder &nbsp; 3. Press <kbd>Ctrl+V</kbd> (pastes as PNG file, no Zone Identifier)
+        </div>
       </div>
     </div>
   </div>
@@ -752,6 +757,60 @@ function drawGradient(ctx, w, h, start, end, dir) {
 }
 
 // ===================================================================
+// FORMAT HELPERS & BMP ENCODER
+// ===================================================================
+const FORMAT = {
+  bmp:  { mime:'image/bmp',  ext:'.bmp' },
+  png:  { mime:'image/png',  ext:'.png' },
+  jpeg: { mime:'image/jpeg', ext:'.jpg' },
+};
+
+function fmtInfo(f) { return FORMAT[f] || FORMAT.png; }
+
+function canvasToBlob(canvas, format, quality) {
+  if (format === 'bmp') return encodeBmp(canvas);
+  return new Promise(r => canvas.toBlob(r, fmtInfo(format).mime, quality));
+}
+
+function encodeBmp(canvas) {
+  const w = canvas.width, h = canvas.height;
+  const ctx = canvas.getContext('2d');
+  const img = ctx.getImageData(0, 0, w, h);
+  const d = img.data;
+  const rowBytes = ((w * 24 + 31) >> 5) << 2; // align to 4
+  const pxSize = rowBytes * h;
+  const buf = new ArrayBuffer(54 + pxSize);
+  const v = new DataView(buf);
+
+  // BITMAPFILEHEADER (14)
+  v.setUint16(0, 0x4D42, true);            // 'BM'
+  v.setUint32(2, buf.byteLength, true);    // file size
+  v.setUint32(10, 54, true);               // pixel offset
+
+  // BITMAPINFOHEADER (40)
+  v.setUint32(14, 40, true);               // header size
+  v.setInt32(18, w, true);
+  v.setInt32(22, h, true);
+  v.setUint16(26, 1, true);                // planes
+  v.setUint16(28, 24, true);               // bpp
+  v.setUint32(34, pxSize, true);           // raw pixel size
+  v.setInt32(38, 2835, true);              // 72 DPI X
+  v.setInt32(42, 2835, true);              // 72 DPI Y
+
+  let off = 54;
+  for (let y = h - 1; y >= 0; y--) {       // bottom-up
+    for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      v.setUint8(off++, d[i+2]);            // B
+      v.setUint8(off++, d[i+1]);            // G
+      v.setUint8(off++, d[i]);              // R
+    }
+    off += rowBytes - w * 3;                // row padding
+  }
+  return new Blob([buf], { type: 'image/bmp' });
+}
+
+// ===================================================================
 // MAIN GENERATE FUNCTION
 // ===================================================================
 function generate() {
@@ -903,55 +962,90 @@ function generate() {
   results.forEach(r => {
     const div = document.createElement('div');
     div.className = 'gallery-item';
-    const mime = r.format === 'jpeg' ? 'image/jpeg' : 'image/png';
-    const dataUrl = r.canvas.toDataURL(mime, r.format === 'jpeg' ? 0.95 : undefined);
+    const previewUrl = r.canvas.toDataURL('image/png');
+    const finfo = fmtInfo(r.format);
 
     const img = document.createElement('img');
-    img.src = dataUrl;
+    img.src = previewUrl;
     img.alt = r.name;
-    img.title = 'Right-click -> Save as (no Windows warning)';
+    img.title = 'Right-click -> Save as';
     img.style.cursor = 'pointer';
     img.style.display = 'block';
     img.style.width = '100%';
     img.loading = 'lazy';
     img.addEventListener('click', () => openModal(r.canvas));
 
-    const info = document.createElement('div');
-    info.className = 'info';
-    info.innerHTML = `<span class="name">${r.name}</span><span class="size">${r.canvas.width}&times;${r.canvas.height}</span>`;
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'info';
+    infoDiv.innerHTML = '<span class="name">' + r.name + '</span><span class="size">' + r.canvas.width + '&times;' + r.canvas.height + '</span>';
 
     const btnGroup = document.createElement('div');
     btnGroup.className = 'flex gap-8';
+    btnGroup.style.flexWrap = 'wrap';
 
-    const openBtn = document.createElement('button');
-    openBtn.className = 'btn btn-sm btn-secondary';
-    openBtn.textContent = 'Open';
-    openBtn.title = 'Open in new tab (right-click -> Save as)';
-    openBtn.addEventListener('click', (e) => {
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'btn btn-sm btn-primary';
+    copyBtn.textContent = 'Copy';
+    copyBtn.title = 'Copy to clipboard, then Ctrl+V in folder (no Windows warning)';
+    copyBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
-      window.open(dataUrl, '_blank');
+      try {
+        const blob = await canvasToBlob(r.canvas, 'png');
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1500);
+      } catch(err) {
+        copyBtn.textContent = 'Failed';
+        setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+      }
+    });
+
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'btn btn-sm btn-secondary';
+    saveBtn.textContent = 'Save As...';
+    saveBtn.title = 'Native save dialog, bypasses download manager';
+    saveBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      try {
+        if (!window.showSaveFilePicker) throw new Error('no API');
+        const handle = await window.showSaveFilePicker({
+          suggestedName: sanitizeName(r.name) + finfo.ext,
+          types: [{ description: 'Image', accept: { [finfo.mime]: [finfo.ext] } }]
+        });
+        const blob = await canvasToBlob(r.canvas, r.format);
+        const w = await handle.createWritable();
+        await w.write(blob);
+        await w.close();
+      } catch(err) {
+        const a = document.createElement('a');
+        a.href = previewUrl;
+        a.download = sanitizeName(r.name) + '.png';
+        a.click();
+      }
     });
 
     const dlBtn = document.createElement('button');
     dlBtn.className = 'btn btn-sm btn-secondary';
     dlBtn.textContent = 'Download';
-    dlBtn.addEventListener('click', (e) => {
+    dlBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
+      const blob = await canvasToBlob(r.canvas, r.format);
+      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = dataUrl;
-      a.download = sanitizeName(r.name) + (r.format === 'jpeg' ? '.jpg' : '.png');
+      a.href = url;
+      a.download = sanitizeName(r.name) + finfo.ext;
       a.click();
+      URL.revokeObjectURL(url);
     });
 
-    btnGroup.appendChild(openBtn);
+    btnGroup.appendChild(copyBtn);
+    btnGroup.appendChild(saveBtn);
     btnGroup.appendChild(dlBtn);
-    info.appendChild(btnGroup);
+    infoDiv.appendChild(btnGroup);
     div.appendChild(img);
-    div.appendChild(info);
+    div.appendChild(infoDiv);
     gallery.appendChild(div);
-  });
-
-  // store for zip download
+  });// store for zip download
   window._lastResults = results;
 }
 
@@ -971,13 +1065,10 @@ async function downloadAllAsZip() {
   }
   const zip = new JSZip();
   const folder = zip.folder('lcd_test_patterns');
-  const promises = results.map(r => new Promise(resolve => {
-    const mime = r.format === 'jpeg' ? 'image/jpeg' : 'image/png';
-    const ext = r.format === 'jpeg' ? '.jpg' : '.png';
-    r.canvas.toBlob(blob => {
-      folder.file(sanitizeName(r.name) + ext, blob);
-      resolve();
-    }, mime, r.format === 'jpeg' ? 0.95 : undefined);
+  const promises = results.map(r => new Promise(async resolve => {
+    const blob = await canvasToBlob(r.canvas, r.format);
+    folder.file(sanitizeName(r.name) + fmtInfo(r.format).ext, blob);
+    resolve();
   }));
   await Promise.all(promises);
   const zipBlob = await zip.generateAsync({ type: 'blob' });
