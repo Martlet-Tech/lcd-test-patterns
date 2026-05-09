@@ -168,52 +168,90 @@ input[type="checkbox"] { accent-color: var(--accent); }
   <!-- Resolution -->
   <div class="section">
     <div class="section-header" data-i18n="res.title">Resolution</div>
-    <div class="section-body">
-      <div class="form-row">
-        <div class="form-group">
-          <label data-i18n="res.preset">Preset</label>
-          <select id="resPreset">
-            <option value="" data-i18n="res.custom">Custom</option>
-            <option value="240,320">D (240×320)</option>
-            <option value="320,480">H (320×480)</option>
-            <option value="480,272">I (480×272)</option>
-            <option value="800,480">R (800×480)</option>
-            <option value="1024,600">T (1024×600)</option>
-            <option value="720,1280">X (720×1280)</option>
-            <option value="800,1280">W (800×1280)</option>
-            <option value="1920,1080">Full HD (1920×1080)</option>
-          </select>
+    <div class="section-body" style="display:flex;gap:16px;">
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+        <div class="form-row">
+          <div class="form-group">
+            <label data-i18n="res.preset">Preset</label>
+            <select id="resPreset">
+              <option value="" data-i18n="res.custom">Custom</option>
+              <option value="240,320">D (240×320)</option>
+              <option value="320,480">H (320×480)</option>
+              <option value="480,272">I (480×272)</option>
+              <option value="800,480">R (800×480)</option>
+              <option value="1024,600">T (1024×600)</option>
+              <option value="720,1280">X (720×1280)</option>
+              <option value="800,1280">W (800×1280)</option>
+              <option value="1920,1080">Full HD (1920×1080)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label data-i18n="res.width">Width</label>
+            <input type="number" id="resX" value="240" min="1" max="8192">
+          </div>
+          <div class="form-group">
+            <label data-i18n="res.height">Height</label>
+            <input type="number" id="resY" value="320" min="1" max="8192">
+          </div>
+          <button class="btn btn-secondary" id="btnSwap" title="Swap width &amp; height" data-i18n="res.swap">&#8646; Swap</button>
         </div>
-        <div class="form-group">
-          <label data-i18n="res.width">Width</label>
-          <input type="number" id="resX" value="240" min="1" max="8192">
+        <div class="form-row">
+          <div class="form-group flex items-center" style="flex-direction:row; gap:6px;">
+            <input type="checkbox" id="chkCutPanel">
+            <label for="chkCutPanel" style="font-size:13px; color:var(--text); cursor:pointer;" data-i18n="res.cutPanel">Cut Panel Mode</label>
+          </div>
+          <div class="form-group">
+            <label data-i18n="res.visH">Visible Height</label>
+            <input type="number" id="cutKeep" value="320" min="1" max="8192" disabled>
+          </div>
+          <div class="form-group">
+            <label data-i18n="res.totalH">Total Height</label>
+            <input type="number" id="cutTotal" value="360" min="1" max="8192" disabled>
+          </div>
         </div>
-        <div class="form-group">
-          <label data-i18n="res.height">Height</label>
-          <input type="number" id="resY" value="320" min="1" max="8192">
+        <div class="form-row">
+          <div class="form-group flex items-center" style="flex-direction:row;gap:6px;">
+            <input type="checkbox" id="chkMask">
+            <label for="chkMask" style="font-size:13px;color:var(--text);cursor:pointer;" data-i18n="res.mask">Mask Mode</label>
+          </div>
+          <div class="form-group" id="maskWGrp" style="display:none;">
+            <label data-i18n="res.maskW">Content W</label>
+            <input type="number" id="maskW" value="120" min="1" max="8192">
+          </div>
+          <div class="form-group" id="maskHGrp" style="display:none;">
+            <label data-i18n="res.maskH">Content H</label>
+            <input type="number" id="maskH" value="120" min="1" max="8192">
+          </div>
         </div>
-        <button class="btn btn-secondary" id="btnSwap" title="Swap width &amp; height" data-i18n="res.swap">&#8646; Swap</button>
+        <div class="form-row">
+          <div class="form-group flex items-center" style="flex-direction:row; gap:10px;">
+            <label style="font-size:13px; color:var(--text);" data-i18n="res.fmt">Format:</label>
+            <label style="font-size:13px; font-weight:400;"><input type="radio" name="fmt" value="bmp" checked> <span data-i18n="fmt.bmp">BMP (24-bit)</span></label>
+            <label style="font-size:13px; font-weight:400;"><input type="radio" name="fmt" value="png"> <span data-i18n="fmt.png">PNG</span></label>
+            <label style="font-size:13px; font-weight:400;"><input type="radio" name="fmt" value="jpeg"> <span data-i18n="fmt.jpeg">JPEG</span></label>
+          </div>
+        </div>
       </div>
-      <div class="form-row">
-        <div class="form-group flex items-center" style="flex-direction:row; gap:6px;">
-          <input type="checkbox" id="chkCutPanel">
-          <label for="chkCutPanel" style="font-size:13px; color:var(--text); cursor:pointer;" data-i18n="res.cutPanel">Cut Panel Mode</label>
+      <div id="maskPanel" style="display:none;width:180px;flex-shrink:0;flex-direction:column;gap:4px;align-items:center;">
+        <canvas id="maskPreview" style="width:100%;border:1px solid var(--border);border-radius:var(--radius);cursor:move;background:var(--bg);"></canvas>
+        <div style="display:flex;flex-direction:column;gap:2px;font-size:12px;width:100%;">
+          <div style="display:flex;gap:4px;align-items:center;justify-content:center;">
+            <span style="color:var(--text-dim);">X:</span>
+            <button class="btn btn-sm btn-secondary" onclick="maskNudge('x',-1)" style="padding:2px 6px;font-size:11px;">−</button>
+            <input type="number" id="maskX" value="0" min="0" style="width:44px;text-align:center;padding:2px 4px;font-size:12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);">
+            <button class="btn btn-sm btn-secondary" onclick="maskNudge('x',1)" style="padding:2px 6px;font-size:11px;">+</button>
+          </div>
+          <div style="display:flex;gap:4px;align-items:center;justify-content:center;">
+            <span style="color:var(--text-dim);">Y:</span>
+            <button class="btn btn-sm btn-secondary" onclick="maskNudge('y',-1)" style="padding:2px 6px;font-size:11px;">−</button>
+            <input type="number" id="maskY" value="0" min="0" style="width:44px;text-align:center;padding:2px 4px;font-size:12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);">
+            <button class="btn btn-sm btn-secondary" onclick="maskNudge('y',1)" style="padding:2px 6px;font-size:11px;">+</button>
+          </div>
         </div>
-        <div class="form-group">
-          <label data-i18n="res.visH">Visible Height</label>
-          <input type="number" id="cutKeep" value="320" min="1" max="8192" disabled>
-        </div>
-        <div class="form-group">
-          <label data-i18n="res.totalH">Total Height</label>
-          <input type="number" id="cutTotal" value="360" min="1" max="8192" disabled>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group flex items-center" style="flex-direction:row; gap:10px;">
-          <label style="font-size:13px; color:var(--text);" data-i18n="res.fmt">Format:</label>
-          <label style="font-size:13px; font-weight:400;"><input type="radio" name="fmt" value="bmp" checked> <span data-i18n="fmt.bmp">BMP (24-bit)</span></label>
-          <label style="font-size:13px; font-weight:400;"><input type="radio" name="fmt" value="png"> <span data-i18n="fmt.png">PNG</span></label>
-          <label style="font-size:13px; font-weight:400;"><input type="radio" name="fmt" value="jpeg"> <span data-i18n="fmt.jpeg">JPEG</span></label>
+        <div style="display:flex;gap:8px;align-items:center;font-size:12px;">
+          <span data-i18n="res.maskFill" style="color:var(--text-dim);">Fill:</span>
+          <label><input type="radio" name="maskColor" value="black" checked onchange="updateMaskPreview()"> <span data-i18n="res.black">Black</span></label>
+          <label><input type="radio" name="maskColor" value="white" onchange="updateMaskPreview()"> <span data-i18n="res.white">White</span></label>
         </div>
       </div>
     </div>
@@ -532,6 +570,17 @@ function parseUrlParams() {
   if (p.has('flickA')) document.getElementById('flickColorA').value='#'+p.get('flickA');
   if (p.has('flickB')) document.getElementById('flickColorB').value='#'+p.get('flickB');
   if (p.has('flickBs')) document.getElementById('flickBlockSize').value=parseInt(p.get('flickBs'));
+  if (p.has('mask')) {
+    document.getElementById('chkMask').checked = p.get('mask') === '1';
+    if (p.has('mw')) document.getElementById('maskW').value = parseInt(p.get('mw'));
+    if (p.has('mh')) document.getElementById('maskH').value = parseInt(p.get('mh'));
+    if (p.has('mx')) document.getElementById('maskX').value = parseInt(p.get('mx'));
+    if (p.has('my')) document.getElementById('maskY').value = parseInt(p.get('my'));
+    if (p.has('maskColor')) {
+      const el = document.querySelector('input[name="maskColor"][value="'+p.get('maskColor')+'"]');
+      if (el) el.checked = true;
+    }
+  }
   if (p.get('auto')==='1') setTimeout(generate, 50);
 }
 
@@ -543,6 +592,7 @@ en: {
 'tab.patterns':'Test Patterns','tab.timing':'DPI Timing Calculator','tab.about':'About',
 'res.title':'Resolution','res.preset':'Preset','res.custom':'Custom','res.width':'Width','res.height':'Height','res.swap':'Swap',
 'res.cutPanel':'Cut Panel Mode','res.visH':'Visible Height','res.totalH':'Total Height',
+'res.mask':'Mask Mode','res.maskW':'Content W','res.maskH':'Content H','res.maskFill':'Fill:','res.black':'Black','res.white':'White',
 'res.fmt':'Format:','fmt.bmp':'BMP (24-bit)','fmt.png':'PNG','fmt.jpeg':'JPEG',
 'pat.title':'Test Patterns','pat.selected':'selected','pat.selAll':'Select All','pat.deselAll':'Deselect All','pat.detail':'Detail Mode (10 pics)','pat.simple':'Simple Mode (5 pics)',
 'cat.Detail Mode':'Detail Mode','cat.Simple Mode':'Simple Mode','cat.Common Patterns':'Common Patterns','cat.CrossTalk':'CrossTalk','cat.Flicker':'Flicker','cat.Gradient':'Gradient',
@@ -582,6 +632,7 @@ zh: {
 'tab.patterns':'测试图案','tab.timing':'DPI 时序计算器','tab.about':'关于',
 'res.title':'分辨率','res.preset':'预设','res.custom':'自定义','res.width':'宽','res.height':'高','res.swap':'交换',
 'res.cutPanel':'切割面板模式','res.visH':'可视高度','res.totalH':'总高度',
+'res.mask':'遮蔽模式','res.maskW':'内容宽度','res.maskH':'内容高度','res.maskFill':'填充:','res.black':'黑色','res.white':'白色',
 'res.fmt':'格式:','fmt.bmp':'BMP (24位)','fmt.png':'PNG','fmt.jpeg':'JPEG',
 'pat.title':'测试图案','pat.selected':'已选','pat.selAll':'全选','pat.deselAll':'取消全选','pat.detail':'详细模式 (10张)','pat.simple':'简洁模式 (5张)',
 'cat.Detail Mode':'详细模式','cat.Simple Mode':'简洁模式','cat.Common Patterns':'通用图案','cat.CrossTalk':'串扰','cat.Flicker':'闪烁','cat.Gradient':'渐变',
@@ -919,6 +970,113 @@ function encodeBmp(canvas) {
 }
 
 // ===================================================================
+// MASK MODE
+// ===================================================================
+function maskNudge(axis, delta) {
+  const el = document.getElementById('mask' + axis.toUpperCase());
+  const pw = parseInt(document.getElementById('resX').value);
+  const ph = parseInt(document.getElementById('resY').value);
+  const mw = parseInt(document.getElementById('maskW').value);
+  const mh = parseInt(document.getElementById('maskH').value);
+  let val = parseInt(el.value) + delta;
+  const max = (axis === 'x' ? pw - mw : ph - mh);
+  el.value = Math.max(0, Math.min(val, Math.max(0, max)));
+  updateMaskPreview();
+}
+
+function updateMaskPreview() {
+  const canvas = document.getElementById('maskPreview');
+  if (!canvas) return;
+  const pw = parseInt(document.getElementById('resX').value);
+  const ph = parseInt(document.getElementById('resY').value);
+  const mw = parseInt(document.getElementById('maskW').value);
+  const mh = parseInt(document.getElementById('maskH').value);
+  const mx = parseInt(document.getElementById('maskX').value);
+  const my = parseInt(document.getElementById('maskY').value);
+  const mc = document.querySelector('input[name="maskColor"]:checked').value;
+  const rect = canvas.getBoundingClientRect();
+  const rw = rect.width || 180;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = rw * dpr;
+  canvas.height = rw * (ph / pw) * dpr;
+  const ctx = canvas.getContext('2d');
+  const s = canvas.width / pw;
+  ctx.fillStyle = mc === 'black' ? '#000' : '#fff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = mc === 'black' ? '#fff' : '#000';
+  ctx.fillRect(mx * s, my * s, mw * s, mh * s);
+  ctx.strokeStyle = '#ff0';
+  ctx.lineWidth = Math.max(1, 2 * dpr);
+  ctx.strokeRect(mx * s, my * s, mw * s, mh * s);
+}
+
+function initMaskDrag() {
+  const canvas = document.getElementById('maskPreview');
+  if (!canvas) return;
+  let dragging = false;
+  canvas.addEventListener('mousedown', (e) => {
+    dragging = true;
+    canvas.style.cursor = 'grabbing';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    const pw = parseInt(document.getElementById('resX').value);
+    const ph = parseInt(document.getElementById('resY').value);
+    const mw = parseInt(document.getElementById('maskW').value);
+    const mh = parseInt(document.getElementById('maskH').value);
+    const rect = canvas.getBoundingClientRect();
+    const rx = (e.clientX - rect.left) / rect.width;
+    const ry = (e.clientY - rect.top) / rect.height;
+    let mx = Math.round(rx * pw - mw / 2);
+    let my = Math.round(ry * ph - mh / 2);
+    document.getElementById('maskX').value = Math.max(0, Math.min(mx, pw - mw));
+    document.getElementById('maskY').value = Math.max(0, Math.min(my, ph - mh));
+    updateMaskPreview();
+  });
+  document.addEventListener('mouseup', () => {
+    if (dragging) { dragging = false; canvas.style.cursor = 'move'; }
+  });
+}
+
+function toggleMask(show) {
+  document.getElementById('maskPanel').style.display = show ? 'flex' : 'none';
+  document.getElementById('maskWGrp').style.display = show ? '' : 'none';
+  document.getElementById('maskHGrp').style.display = show ? '' : 'none';
+  if (show) updateMaskPreview();
+}
+
+function clampMaskPos() {
+  const pw = parseInt(document.getElementById('resX').value);
+  const ph = parseInt(document.getElementById('resY').value);
+  const mw = parseInt(document.getElementById('maskW').value);
+  const mh = parseInt(document.getElementById('maskH').value);
+  const mx = parseInt(document.getElementById('maskX').value);
+  const my = parseInt(document.getElementById('maskY').value);
+  document.getElementById('maskX').value = Math.max(0, Math.min(mx, pw - mw));
+  document.getElementById('maskY').value = Math.max(0, Math.min(my, ph - mh));
+}
+
+function applyMask(canvas) {
+  if (!document.getElementById('chkMask').checked) return canvas;
+  const pw = parseInt(document.getElementById('resX').value);
+  const ph = parseInt(document.getElementById('resY').value);
+  const mw = parseInt(document.getElementById('maskW').value);
+  const mh = parseInt(document.getElementById('maskH').value);
+  const mx = parseInt(document.getElementById('maskX').value);
+  const my = parseInt(document.getElementById('maskY').value);
+  const mc = document.querySelector('input[name="maskColor"]:checked').value;
+  const out = document.createElement('canvas');
+  out.width = pw; out.height = ph;
+  const oc = out.getContext('2d');
+  oc.fillStyle = mc === 'black' ? '#000000' : '#ffffff';
+  oc.fillRect(0, 0, pw, ph);
+  oc.imageSmoothingEnabled = false;
+  oc.drawImage(canvas, mx, my);
+  return out;
+}
+
+// ===================================================================
 // MAIN GENERATE FUNCTION
 // ===================================================================
 function generate() {
@@ -934,7 +1092,9 @@ function generate() {
   const colA = document.getElementById('flickColorA').value;
   const colB = document.getElementById('flickColorB').value;
   const bs = parseInt(document.getElementById('flickBlockSize').value);
-  const genW = resX, genH = keepY;
+  const chkMaskEl = document.getElementById('chkMask');
+  const genW = chkMaskEl.checked ? parseInt(document.getElementById('maskW').value) : resX;
+  const genH = chkMaskEl.checked ? parseInt(document.getElementById('maskH').value) : keepY;
   const results = [];
 
   function applyCut(canvas) {
@@ -959,7 +1119,9 @@ function generate() {
   }
 
   function addResult(name, canvas) {
-    const final = applyCut(canvas);
+    let final = canvas;
+    if (document.getElementById('chkMask').checked) final = applyMask(canvas);
+    final = applyCut(final);
     results.push({ name, canvas: final, format: fmt });
   }
 
@@ -1425,14 +1587,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('resY').value = y;
     document.getElementById('hact').value = x;
     document.getElementById('vact').value = y;
+    clampMaskPos(); updateMaskPreview();
   });
 
-  // Resolution sync to timing
+  // Resolution sync to timing & mask preview
   document.getElementById('resX').addEventListener('change', function() {
     document.getElementById('hact').value = this.value;
+    clampMaskPos(); updateMaskPreview();
   });
   document.getElementById('resY').addEventListener('change', function() {
     document.getElementById('vact').value = this.value;
+    clampMaskPos(); updateMaskPreview();
   });
 
   // Swap XY
@@ -1442,6 +1607,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const t = x.value; x.value = y.value; y.value = t;
     document.getElementById('hact').value = x.value;
     document.getElementById('vact').value = y.value;
+    clampMaskPos(); updateMaskPreview();
   });
 
   // Cut panel
@@ -1453,6 +1619,15 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('cutTotal').value = parseInt(document.getElementById('resY').value) + 40;
     }
   });
+
+  // Mask mode
+  document.getElementById('chkMask').addEventListener('change', function() { toggleMask(this.checked); });
+  document.getElementById('maskX').addEventListener('change', updateMaskPreview);
+  document.getElementById('maskY').addEventListener('change', updateMaskPreview);
+  document.getElementById('maskW').addEventListener('change', () => { clampMaskPos(); updateMaskPreview(); });
+  document.getElementById('maskH').addEventListener('change', () => { clampMaskPos(); updateMaskPreview(); });
+  initMaskDrag();
+  toggleMask(document.getElementById('chkMask').checked);
 
   // Generate
   document.getElementById('btnGenerate').addEventListener('click', generate);
