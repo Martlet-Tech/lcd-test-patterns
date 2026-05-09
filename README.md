@@ -67,6 +67,35 @@ This is a web port of [TestPictrueGenerator](https://gitee.com/martlet/TestPictr
 
 Chrome, Firefox, Edge, Safari — any modern browser with Canvas API support.
 
+## Agent Usage (URL Query API)
+
+Construct a URL to auto-configure and generate patterns without manual clicks:
+
+| Param | Example | Description |
+|-------|---------|-------------|
+| `patterns` | `D01,D02,S01` | Comma-separated pattern IDs to select |
+| `fmt` | `bmp` / `png` / `jpeg` | Output image format |
+| `res` | `800,480` | Resolution (`,` or `x` separator) |
+| `lang` | `en` / `zh` | Interface language |
+| `auto` | `1` | Auto-generate on page load |
+
+**Pattern IDs by category:**
+
+| Category | IDs |
+|----------|-----|
+| Detail Mode (10) | `D01` Black Frame, `D02` White, `D03` Red, `D04` Green, `D05` Blue, `D06` Black, `D07` 50% Gray, `D08` Gray Gradient+Crosstalk, `D09` Color Bar, `D10` Sample Picture |
+| Simple Mode (5) | `S01`–`S05` (same as D01–D05 subset) |
+| Common (6) | `C01` Scale/Ruler, `C02` Frame+Triangle, `C03` Chess Board, `C04` H-Line, `C05` V-Line, `C06` AllRGB |
+| CrossTalk (3) | `X01` HV (center), `X02` H (sides), `X03` V (top/bottom) |
+| Flicker (3) | `F01` Block, `F02` H-Line, `F03` V-Line |
+| Gradient (1) | `G01` Gradient |
+
+**Examples:**
+```
+?patterns=D01,D03,D08,C03&fmt=bmp&res=1024,600&auto=1
+?patterns=S01,S02,S03,S04,S05&fmt=png&res=800,480&lang=en&auto=1
+```
+
 ## License
 
 MIT
