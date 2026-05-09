@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LCD Test Patterns - Display Test Image Generator</title>
+<meta name="description" content="Web-based LCD display test pattern generator. Generate test images for screen debugging, pixel checking, gamma calibration, crosstalk testing, and display characterization. Free tool for LCD debug engineers.">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #c9d1d9; --text-dim: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --orange: #d29922; --red: #f85149;
+  --radius: 6px;
+}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; min-height: 100vh; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* header */
+header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+header h1 { font-size: 20px; font-weight: 600; }
+header h1 span { color: var(--accent); }
+header .subtitle { font-size: 13px; color: var(--text-dim); }
+
+/* tabs */
+.tab-nav { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 16px; gap: 0; }
+.tab-nav button { padding: 12px 20px; border: none; background: none; color: var(--text-dim); font-size: 14px; cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; }
+.tab-nav button:hover { color: var(--text); background: rgba(255,255,255,.05); }
+.tab-nav button.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
+.tab-content { display: none; padding: 20px 24px; }
+.tab-content.active { display: block; }
+
+/* sections */
+.section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 16px; overflow: hidden; }
+.section-header { padding: 12px 16px; background: rgba(255,255,255,.03); border-bottom: 1px solid var(--border); font-weight: 600; font-size: 14px; display: flex; align-items: center; justify-content: space-between; }
+.section-body { padding: 16px; }
+
+/* form */
+.form-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; margin-bottom: 10px; }
+.form-row:last-child { margin-bottom: 0; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group label { font-size: 12px; color: var(--text-dim); font-weight: 500; }
+.form-group input[type="number"], .form-group select { padding: 6px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 13px; width: 80px; outline: none; }
+.form-group select { width: auto; min-width: 100px; }
+.form-group input[type="number"]:focus, .form-group select:focus { border-color: var(--accent); }
+.form-group input[type="color"] { width: 36px; height: 36px; padding: 2px; border: 1px solid var(--border); border-radius: var(--radius); background: none; cursor: pointer; }
+.form-group input[type="color"]:hover { border-color: var(--accent); }
+input[type="checkbox"] { accent-color: var(--accent); }
+
+/* pattern checkbox list */
+.pattern-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 6px; }
+.pattern-item { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 13px; transition: background .1s; }
+.pattern-item:hover { background: rgba(255,255,255,.05); }
+.pattern-item .params { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.pattern-item .params input[type="number"] { width: 60px; padding: 3px 6px; font-size: 12px; }
+.pattern-item .params label { font-size: 11px; color: var(--text-dim); }
+.pattern-item.disabled { opacity: .5; pointer-events: none; }
+.pattern-category-label { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-dim); letter-spacing: .5px; padding: 8px 10px 4px; grid-column: 1 / -1; border-bottom: 1px solid var(--border); margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+.pattern-category-label .badge { font-size: 10px; background: var(--border); padding: 1px 6px; border-radius: 8px; font-weight: 400; text-transform: none; letter-spacing: 0; }
+
+/* radio group */
+.radio-group { display: flex; flex-wrap: wrap; gap: 4px; }
+.radio-group label { display: flex; align-items: center; gap: 4px; font-size: 12px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; transition: all .1s; }
+.radio-group label:hover { border-color: var(--accent); }
+.radio-group input[type="radio"]:checked + span { color: var(--accent); }
+.radio-group label:has(input:checked) { border-color: var(--accent); background: rgba(88,166,255,.1); }
+.radio-group input[type="radio"] { accent-color: var(--accent); }
+
+/* buttons */
+.btn { padding: 8px 18px; border: none; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #4c9ae8; }
+.btn-success { background: var(--green); color: #fff; }
+.btn-success:hover { background: #36a44a; }
+.btn-secondary { background: var(--border); color: var(--text); }
+.btn-secondary:hover { background: #3d444d; }
+.btn-danger { background: var(--red); color: #fff; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* results gallery */
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.gallery-item { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; }
+.gallery-item canvas { width: 100%; aspect-ratio: attr(data-w) / attr(data-h); display: block; background: #000; }
+.gallery-item .info { padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; }
+.gallery-item .info .name { font-size: 13px; font-weight: 500; }
+.gallery-item .info .size { font-size: 11px; color: var(--text-dim); }
+
+/* dpi calculator */
+.dpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.dpi-grid .col { display: flex; flex-direction: column; gap: 10px; }
+.dpi-result { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; white-space: pre; overflow-x: auto; margin-top: 8px; min-height: 80px; }
+.dpi-result .hl { color: var(--accent); }
+
+/* color swatch */
+.color-swatch { display: flex; align-items: center; gap: 8px; }
+
+/* responsive */
+@media (max-width: 768px) {
+  .dpi-grid { grid-template-columns: 1fr; }
+  .form-row { flex-direction: column; align-items: stretch; }
+  .form-group input[type="number"] { width: 100%; }
+  .pattern-grid { grid-template-columns: 1fr; }
+  .gallery { grid-template-columns: 1fr; }
+}
+
+/* scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* utility */
+.mt-8 { margin-top: 8px; }
+.mt-16 { margin-top: 16px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-16 { margin-bottom: 16px; }
+.flex { display: flex; }
+.flex-wrap { flex-wrap: wrap; }
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.items-center { align-items: center; }
+.text-dim { color: var(--text-dim); }
+.text-sm { font-size: 13px; }
+
+/* color buttons for quick select */
+.quick-select { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+.quick-select button { font-size: 12px; padding: 4px 12px; }
+
+/* modal for full-size preview */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 1000; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal-overlay img, .modal-overlay canvas { max-width: 95vw; max-height: 95vh; object-fit: contain; }
+.modal-overlay .close { position: absolute; top: 16px; right: 24px; font-size: 28px; color: #fff; cursor: pointer; background: none; border: none; }
+
+/* flicker color grid */
+.flicker-colors { display: flex; gap: 16px; flex-wrap: wrap; }
+
+/* empty state */
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text-dim); }
+.empty-state svg { width: 64px; height: 64px; margin-bottom: 16px; opacity: .4; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1><span>LCD</span> Test Patterns</h1>
+    <div class="subtitle">Display Test Image Generator &mdash; for LCD panel debug &amp; characterization</div>
+  </div>
+  <div class="flex gap-8 items-center">
+    <a href="https://github.com/Martlet-Tech/lcd-test-patterns" target="_blank">GitHub</a>
+    <span class="text-dim text-sm">v1.0</span>
+  </div>
+</header>
+
+<nav class="tab-nav" role="tablist">
+  <button class="active" data-tab="patterns" role="tab">Test Patterns</button>
+  <button data-tab="timing" role="tab">DPI Timing Calculator</button>
+  <button data-tab="about" role="tab">About</button>
+</nav>
+
+<!-- ============ TAB: PATTERNS ============ -->
+<div id="tab-patterns" class="tab-content active">
+
+  <!-- Resolution -->
+  <div class="section">
+    <div class="section-header">Resolution</div>
+    <div class="section-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Preset</label>
+          <select id="resPreset">
+            <option value="">Custom</option>
+            <option value="240,320">D (240×320)</option>
+            <option value="320,480">H (320×480)</option>
+            <option value="480,272">I (480×272)</option>
+            <option value="800,480">R (800×480)</option>
+            <option value="1024,600">T (1024×600)</option>
+            <option value="720,1280">X (720×1280)</option>
+            <option value="800,1280">W (800×1280)</option>
+            <option value="1920,1080">Full HD (1920×1080)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Width</label>
+          <input type="number" id="resX" value="240" min="1" max="8192">
+        </div>
+        <div class="form-group">
+          <label>Height</label>
+          <input type="number" id="resY" value="320" min="1" max="8192">
+        </div>
+        <button class="btn btn-secondary" id="btnSwap" title="Swap width &amp; height">&#8646; Swap</button>
+      </div>
+      <div class="form-row">
+        <div class="form-group flex items-center" style="flex-direction:row; gap:6px;">
+          <input type="checkbox" id="chkCutPanel">
+          <label for="chkCutPanel" style="font-size:13px; color:var(--text); cursor:pointer;">Cut Panel Mode</label>
+        </div>
+        <div class="form-group">
+          <label>Visible Height</label>
+          <input type="number" id="cutKeep" value="320" min="1" max="8192" disabled>
+        </div>
+        <div class="form-group">
+          <label>Total Height</label>
+          <input type="number" id="cutTotal" value="360" min="1" max="8192" disabled>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group flex items-center" style="flex-direction:row; gap:10px;">
+          <label style="font-size:13px; color:var(--text);">Format:</label>
+          <label style="font-size:13px; font-weight:400;"><input type="radio" name="fmt" value="png" checked> PNG</label>
+          <label style="font-size:13px; font-weight:400;"><input type="radio" name="fmt" value="jpeg"> JPEG</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Patterns -->
+  <div class="section">
+    <div class="section-header">
+      <span>Test Patterns</span>
+      <div class="flex gap-8 items-center">
+        <span class="text-dim text-sm" id="selectedCount">0 selected</span>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="quick-select">
+        <button class="btn btn-sm btn-secondary" onclick="selectAllInView()">Select All</button>
+        <button class="btn btn-sm btn-secondary" onclick="deselectAll()">Deselect All</button>
+        <button class="btn btn-sm btn-secondary" onclick="selectDetailMode()">Detail Mode (10 pics)</button>
+        <button class="btn btn-sm btn-secondary" onclick="selectSimpleMode()">Simple Mode (5 pics)</button>
+      </div>
+      <div class="pattern-grid" id="patternList">
+        <!-- populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Gradient Settings -->
+  <div class="section">
+    <div class="section-header">Gradient Settings</div>
+    <div class="section-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Start Color</label>
+          <input type="color" id="gradStart" value="#ffffff">
+        </div>
+        <div class="form-group">
+          <label>End Color</label>
+          <input type="color" id="gradEnd" value="#000000">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="flex:1;">
+          <label>Direction</label>
+          <div class="radio-group" id="gradDirections">
+            <label><input type="radio" name="gradDir" value="LR" checked><span>Left→Right</span></label>
+            <label><input type="radio" name="gradDir" value="RL"><span>Right→Left</span></label>
+            <label><input type="radio" name="gradDir" value="UD"><span>Up→Down</span></label>
+            <label><input type="radio" name="gradDir" value="DU"><span>Down→Up</span></label>
+            <label><input type="radio" name="gradDir" value="LU-RD"><span>↘ Diagonal</span></label>
+            <label><input type="radio" name="gradDir" value="RD-LU"><span>↖ Diagonal</span></label>
+            <label><input type="radio" name="gradDir" value="RU-LD"><span>↙ Diagonal</span></label>
+            <label><input type="radio" name="gradDir" value="LD-RU"><span>↗ Diagonal</span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flicker Settings -->
+  <div class="section">
+    <div class="section-header">Flicker / Pattern Colors</div>
+    <div class="section-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Color A</label>
+          <input type="color" id="flickColorA" value="#000000">
+        </div>
+        <div class="form-group">
+          <label>Color B</label>
+          <input type="color" id="flickColorB" value="#ff0000">
+        </div>
+        <div class="form-group">
+          <label>Block Size</label>
+          <input type="number" id="flickBlockSize" value="10" min="1" max="200">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Generate -->
+  <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+    <button class="btn btn-primary" id="btnGenerate" style="padding:12px 32px; font-size:15px;">Generate Patterns</button>
+    <div class="flex gap-8 items-center">
+      <label class="text-sm text-dim"><input type="checkbox" id="chkShowPreview" checked> Show preview</label>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="resultsSection" style="display:none;">
+    <div class="section">
+      <div class="section-header">
+        <span>Generated Patterns <span class="text-dim text-sm" id="resultCount"></span></span>
+        <div class="flex gap-8">
+          <button class="btn btn-sm btn-success" id="btnDownloadAll">Download All as ZIP</button>
+        </div>
+      </div>
+      <div class="section-body">
+        <div id="resultsPlaceholder" class="empty-state">
+          <p>Click "Generate Patterns" to create test images.</p>
+        </div>
+        <div class="gallery" id="gallery"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TAB: TIMING ============ -->
+<div id="tab-timing" class="tab-content">
+  <div class="section">
+    <div class="section-header">DPI Timing Parameters</div>
+    <div class="section-body">
+      <div class="dpi-grid">
+        <div class="col">
+          <h3 style="font-size:13px; color:var(--accent); margin-bottom:4px;">Horizontal</h3>
+          <div class="form-row">
+            <div class="form-group"><label>HSW</label><input type="number" id="hsw" value="4" min="1"></div>
+            <div class="form-group"><label>HBP</label><input type="number" id="hbp" value="20" min="1"></div>
+            <div class="form-group"><label>HACT</label><input type="number" id="hact" value="240" min="1"></div>
+            <div class="form-group"><label>HFP</label><input type="number" id="hfp" value="10" min="1"></div>
+          </div>
+        </div>
+        <div class="col">
+          <h3 style="font-size:13px; color:var(--accent); margin-bottom:4px;">Vertical</h3>
+          <div class="form-row">
+            <div class="form-group"><label>VSW</label><input type="number" id="vsw" value="4" min="1"></div>
+            <div class="form-group"><label>VBP</label><input type="number" id="vbp" value="20" min="1"></div>
+            <div class="form-group"><label>VACT</label><input type="number" id="vact" value="320" min="1"></div>
+            <div class="form-group"><label>VFP</label><input type="number" id="vfp" value="10" min="1"></div>
+          </div>
+        </div>
+      </div>
+      <div class="form-row mt-8">
+        <div class="form-group"><label>Target FPS</label><input type="number" id="fps" value="60" min="1" max="480"></div>
+        <button class="btn btn-primary" id="btnCalcClk">Calculate Pixel Clock</button>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Pixel Clock (KHz)</label><input type="number" id="clkResult" readonly style="width:120px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius); color:var(--accent); font-weight:600; font-size:15px; padding:6px 10px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Signal Polarity</div>
+    <div class="section-body">
+      <div class="form-row">
+        <div class="form-group"><label>HSYNC</label><select id="polHs"><option value="0">Low Active</option><option value="1">High Active</option></select></div>
+        <div class="form-group"><label>VSYNC</label><select id="polVs"><option value="0">Low Active</option><option value="1">High Active</option></select></div>
+        <div class="form-group"><label>DE</label><select id="polDe"><option value="0">Low Active</option><option value="1">High Active</option></select></div>
+        <div class="form-group"><label>CLK</label><select id="polClk"><option value="0">Rising Edge</option><option value="1">Falling Edge</option></select></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">DSI Settings</div>
+    <div class="section-body">
+      <div class="form-row">
+        <div class="form-group flex items-center" style="flex-direction:row; gap:6px;">
+          <input type="checkbox" id="chkDsi">
+          <label for="chkDsi" style="font-size:13px; color:var(--text); cursor:pointer;">Enable DSI</label>
+        </div>
+        <div class="form-group"><label>Lanes</label><input type="number" id="dsiLanes" value="4" min="1" max="8" disabled></div>
+        <div class="form-group"><label>Color Format (bits)</label><select id="dsiColorBits" disabled><option>16</option><option selected>18</option><option>24</option></select></div>
+        <button class="btn btn-primary" id="btnCalcDsi" disabled>Calculate DSI Bitrate</button>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>DSI Bitrate (Mbps)</label><input type="number" id="dsiResult" readonly style="width:140px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius); color:var(--accent); font-weight:600; padding:6px 10px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">Configuration Script</div>
+    <div class="section-body">
+      <button class="btn btn-primary" id="btnGenScript">Generate Config Script</button>
+      <div class="dpi-result" id="configOutput">Click "Generate Config Script" to produce timing configuration.</div>
+      <button class="btn btn-sm btn-secondary mt-8" id="btnCopyScript">Copy to Clipboard</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TAB: ABOUT ============ -->
+<div id="tab-about" class="tab-content">
+  <div class="section">
+    <div class="section-header">About LCD Test Patterns</div>
+    <div class="section-body" style="line-height:1.8;">
+      <p><strong>LCD Test Patterns</strong> is a web-based tool for generating LCD display test images. It is a port of the open-source C# Windows Forms application <em>TestPictrueGenerator</em>.</p>
+      <p style="margin-top:12px;">Features:</p>
+      <ul style="padding-left:20px; color:var(--text-dim);">
+        <li>Standard test patterns: pure colors, gray gradients, color bars</li>
+        <li>LCD characterization: crosstalk, flicker, pixel response</li>
+        <li>Scale/ruler patterns for pixel mapping</li>
+        <li>AllRGB images with unique colors per pixel</li>
+        <li>DPI timing calculator for display driver configuration</li>
+        <li>DSI bitrate calculation</li>
+        <li>Cut panel mode for partial-screen displays</li>
+      </ul>
+      <p style="margin-top:12px;">Built for LCD debug engineers, display driver developers, and hardware validation teams.</p>
+      <p style="margin-top:16px; color:var(--text-dim); font-size:13px;">
+        Original C# project by <a href="mailto:martlet.zhu@gmail.com">Martlet Zhu</a> &bull;
+        Web port by <a href="https://github.com/Martlet-Tech">Martlet-Tech</a> &bull;
+        <a href="https://github.com/Martlet-Tech/lcd-test-patterns">View on GitHub</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL ============ -->
+<div class="modal-overlay" id="modal">
+  <button class="close" id="modalClose">&times;</button>
+  <canvas id="modalCanvas"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+// ===================================================================
+// PATTERN DEFINITIONS
+// ===================================================================
+const PATTERNS = [
+  // -- Detail Mode --
+  { id:'D01', cat:'Detail Mode', label:'1. Black Frame', gen:'frame',
+    params: { frameWidth: { label:'Width', def:4, min:1, max:200 }, isCircle: { label:'Circle', def:false, type:'checkbox' } } },
+  { id:'D02', cat:'Detail Mode', label:'2. White', gen:'solid', params: { color: { def:'#ffffff', hidden:true } } },
+  { id:'D03', cat:'Detail Mode', label:'3. Red', gen:'solid', params: { color: { def:'#ff0000', hidden:true } } },
+  { id:'D04', cat:'Detail Mode', label:'4. Green', gen:'solid', params: { color: { def:'#00ff00', hidden:true } } },
+  { id:'D05', cat:'Detail Mode', label:'5. Blue', gen:'solid', params: { color: { def:'#0000ff', hidden:true } } },
+  { id:'D06', cat:'Detail Mode', label:'6. Black', gen:'solid', params: { color: { def:'#000000', hidden:true } } },
+  { id:'D07', cat:'Detail Mode', label:'7. 50% Gray', gen:'solid', params: { color: { def:'#7f7f7f', hidden:true } } },
+  { id:'D08', cat:'Detail Mode', label:'8. Gray Gradient + Crosstalk', gen:'grayCrosstalk' },
+  { id:'D09', cat:'Detail Mode', label:'9. Color Bar', gen:'colorBar' },
+  { id:'D10', cat:'Detail Mode', label:'10. Sample Picture', gen:'samplePic' },
+
+  // -- Simple Mode --
+  { id:'S01', cat:'Simple Mode', label:'1. Black Frame', gen:'frame',
+    params: { frameWidth: { label:'Width', def:4, min:1, max:200 }, isCircle: { label:'Circle', def:false, type:'checkbox' } } },
+  { id:'S02', cat:'Simple Mode', label:'2. White', gen:'solid', params: { color: { def:'#ffffff', hidden:true } } },
+  { id:'S03', cat:'Simple Mode', label:'3. Color Bar', gen:'colorBar' },
+  { id:'S04', cat:'Simple Mode', label:'4. Gray Gradient + Crosstalk', gen:'grayCrosstalk' },
+  { id:'S05', cat:'Simple Mode', label:'5. Black', gen:'solid', params: { color: { def:'#000000', hidden:true } } },
+
+  // -- Common --
+  { id:'C01', cat:'Common Patterns', label:'Scale / Ruler', gen:'scale' },
+  { id:'C02', cat:'Common Patterns', label:'Frame + Triangle', gen:'frameTriangle' },
+  { id:'C03', cat:'Common Patterns', label:'Chess Board', gen:'chess', params: { gridSize: { label:'Grid Size', def:16, min:2, max:200 } } },
+  { id:'C04', cat:'Common Patterns', label:'H-Line (horizontal stripes)', gen:'hline', params: { stripeWidth: { label:'Width', def:4, min:1, max:200 } } },
+  { id:'C05', cat:'Common Patterns', label:'V-Line (vertical stripes)', gen:'vline', params: { stripeWidth: { label:'Width', def:4, min:1, max:200 } } },
+  { id:'C06', cat:'Common Patterns', label:'AllRGB (unique colors)', gen:'allrgb' },
+
+  // -- CrossTalk --
+  { id:'X01', cat:'CrossTalk', label:'HV CrossTalk (center block)', gen:'xtalkHV' },
+  { id:'X02', cat:'CrossTalk', label:'H CrossTalk (side blocks)', gen:'xtalkH' },
+  { id:'X03', cat:'CrossTalk', label:'V CrossTalk (top/bottom blocks)', gen:'xtalkV' },
+
+  // -- Flicker --
+  { id:'F01', cat:'Flicker', label:'Flicker Pattern (block)', gen:'flickerPattern' },
+  { id:'F02', cat:'Flicker', label:'Flicker H-Line', gen:'flickerH' },
+  { id:'F03', cat:'Flicker', label:'Flicker V-Line', gen:'flickerV' },
+
+  // -- Gradient --
+  { id:'G01', cat:'Gradient', label:'Gradient', gen:'gradient' },
+];
+
+// ===================================================================
+// GENERATOR FUNCTIONS
+// ===================================================================
+function hexToRgb(h) {
+  const r = parseInt(h.slice(1,3),16), g = parseInt(h.slice(3,5),16), b = parseInt(h.slice(5,7),16);
+  return {r,g,b};
+}
+
+function drawSolid(ctx, w, h, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(0, 0, w, h);
+}
+
+function drawFrame(ctx, w, h, fw, isCircle) {
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = '#000000';
+  if (isCircle) {
+    ctx.beginPath();
+    ctx.ellipse(w/2, h/2, w/2-fw, h/2-fw, 0, 0, Math.PI*2);
+    ctx.fill();
+  } else {
+    ctx.fillRect(fw, fw, w-2*fw, h-2*fw);
+  }
+}
+
+function drawColorBar(ctx, w, h) {
+  const barH = h / 5;
+  // R
+  let grad = ctx.createLinearGradient(0,0,w,0);
+  grad.addColorStop(0,'#000'); grad.addColorStop(1,'#f00');
+  ctx.fillStyle = grad; ctx.fillRect(0,0,w,barH);
+  // G
+  grad = ctx.createLinearGradient(0,0,w,0);
+  grad.addColorStop(0,'#000'); grad.addColorStop(1,'#0f0');
+  ctx.fillStyle = grad; ctx.fillRect(0,barH,w,barH);
+  // B
+  grad = ctx.createLinearGradient(0,0,w,0);
+  grad.addColorStop(0,'#000'); grad.addColorStop(1,'#00f');
+  ctx.fillStyle = grad; ctx.fillRect(0,2*barH,w,barH);
+  // White
+  grad = ctx.createLinearGradient(0,0,w,0);
+  grad.addColorStop(0,'#000'); grad.addColorStop(1,'#fff');
+  ctx.fillStyle = grad; ctx.fillRect(0,3*barH,w,barH);
+  // CYM
+  const b2 = barH;
+  grad = ctx.createLinearGradient(0,0,w/2,0);
+  grad.addColorStop(0,'#0ff'); grad.addColorStop(1,'#f0f');
+  ctx.fillStyle = grad; ctx.fillRect(0,4*barH,w/2,b2);
+  grad = ctx.createLinearGradient(w/2,0,w,0);
+  grad.addColorStop(0,'#f0f'); grad.addColorStop(1,'#ff0');
+  ctx.fillStyle = grad; ctx.fillRect(w/2,4*barH,w/2,b2);
+}
+
+function drawGrayCrosstalk(ctx, w, h, gradStart, gradEnd) {
+  const grad = ctx.createLinearGradient(w, h, -1, -1);
+  grad.addColorStop(0, gradStart); grad.addColorStop(1, gradEnd);
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(w/6, h/4, 2*w/3, h/2);
+}
+
+function drawScale(ctx, w, h) {
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 1;
+  const font = Math.min(14, Math.max(10, Math.floor(w/80)));
+  ctx.font = font + 'px sans-serif';
+  ctx.fillStyle = '#ffffff';
+  // horizontal top
+  for (let x = 0; x < w; x++) {
+    if (x % 100 === 0) {
+      ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x, Math.min(24, h/4)); ctx.stroke();
+      if (x > 0) ctx.fillText(x.toString(), x+3, Math.min(34, h/3));
+    } else if (x % 50 === 0) {
+      ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x, Math.min(18, h/5)); ctx.stroke();
+    } else if (x % 10 === 0) {
+      ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x, Math.min(12, h/6)); ctx.stroke();
+    } else if (x % 2 === 0) {
+      ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x, Math.min(6, h/10)); ctx.stroke();
+    }
+  }
+  // vertical left
+  for (let y = 0; y < h; y++) {
+    if (y % 100 === 0) {
+      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(Math.min(24, w/4), y); ctx.stroke();
+      if (y > 0) ctx.fillText(y.toString(), Math.min(34, w/3), y+4);
+    } else if (y % 50 === 0) {
+      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(Math.min(18, w/5), y); ctx.stroke();
+    } else if (y % 10 === 0) {
+      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(Math.min(12, w/6), y); ctx.stroke();
+    } else if (y % 2 === 0) {
+      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(Math.min(6, h/10), y); ctx.stroke();
+    }
+  }
+}
+
+function drawFrameTriangle(ctx, w, h) {
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(0, 0, w, h);
+  // create triangle pattern texture
+  const tw = 32, th = 28;
+  const patternCanvas = document.createElement('canvas');
+  patternCanvas.width = tw; patternCanvas.height = th;
+  const pc = patternCanvas.getContext('2d');
+  pc.fillStyle = '#000000';
+  pc.beginPath(); pc.moveTo(tw/2, 0); pc.lineTo(tw, th); pc.lineTo(0, th); pc.closePath(); pc.fill();
+  const pat = ctx.createPattern(patternCanvas, 'repeat');
+  ctx.fillStyle = pat;
+  ctx.fillRect(8, 8, w-16, h-16);
+}
+
+function drawChess(ctx, w, h, gs) {
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, w, h);
+  const c = document.createElement('canvas');
+  c.width = c.height = 2*gs;
+  const cc = c.getContext('2d');
+  cc.fillStyle = '#ffffff'; cc.fillRect(0,0,2*gs,2*gs);
+  cc.fillStyle = '#000000'; cc.fillRect(0,0,gs,gs);
+  cc.fillStyle = '#000000'; cc.fillRect(gs,gs,gs,gs);
+  const pat = ctx.createPattern(c, 'repeat');
+  ctx.fillStyle = pat;
+  ctx.fillRect(0, 0, w, h);
+}
+
+function drawHLine(ctx, w, h, sw) {
+  const c = document.createElement('canvas');
+  c.width = 2*sw; c.height = 2*sw;
+  const cc = c.getContext('2d');
+  cc.fillStyle = '#ffffff'; cc.fillRect(0,0,2*sw,2*sw);
+  cc.fillStyle = '#000000'; cc.fillRect(0,0,2*sw,sw);
+  const pat = ctx.createPattern(c, 'repeat');
+  ctx.fillStyle = pat; ctx.fillRect(0,0,w,h);
+}
+
+function drawVLine(ctx, w, h, sw) {
+  const c = document.createElement('canvas');
+  c.width = 2*sw; c.height = 2*sw;
+  const cc = c.getContext('2d');
+  cc.fillStyle = '#ffffff'; cc.fillRect(0,0,2*sw,2*sw);
+  cc.fillStyle = '#000000'; cc.fillRect(0,0,sw,2*sw);
+  const pat = ctx.createPattern(c, 'repeat');
+  ctx.fillStyle = pat; ctx.fillRect(0,0,w,h);
+}
+
+function drawAllRGB(ctx, w, h) {
+  const total = w * h;
+  const imageData = ctx.createImageData(w, h);
+  const data = imageData.data;
+  // Use deterministic shuffled order via multiplicative LCG
+  // Map each index to a unique color across the full 24-bit space
+  const step = Math.floor(16777216 / total);
+  // Shuffle indices using a simple XOR shift
+  const indices = new Uint32Array(total);
+  for (let i = 0; i < total; i++) indices[i] = i;
+  // Fisher-Yates with seeded prng for deterministic output
+  let seed = 42;
+  function nextRand() { seed = (seed * 1664525 + 1013904223) & 0x7fffffff; return seed / 0x7fffffff; }
+  for (let i = total - 1; i > 0; i--) {
+    const j = Math.floor(nextRand() * (i + 1));
+    const tmp = indices[i]; indices[i] = indices[j]; indices[j] = tmp;
+  }
+  for (let i = 0; i < total; i++) {
+    const colorVal = indices[i] * step;
+    const idx = i * 4;
+    data[idx]     = (colorVal >> 16) & 0xFF;
+    data[idx + 1] = (colorVal >> 8) & 0xFF;
+    data[idx + 2] = colorVal & 0xFF;
+    data[idx + 3] = 255;
+  }
+  ctx.putImageData(imageData, 0, 0);
+}
+
+function drawSamplePic(ctx, w, h) {
+  ctx.fillStyle = '#222';
+  ctx.fillRect(0, 0, w, h);
+  // colorful circles
+  const cx = w/2, cy = h/2, r = Math.min(w,h)/4;
+  for (let i = 0; i < 8; i++) {
+    const angle = i * Math.PI / 4;
+    const x = cx + Math.cos(angle) * r;
+    const y = cy + Math.sin(angle) * r;
+    const hue = i * 45;
+    ctx.fillStyle = `hsl(${hue}, 100%, 60%)`;
+    ctx.beginPath();
+    ctx.arc(x, y, r/3, 0, Math.PI*2);
+    ctx.fill();
+  }
+  const font = Math.max(12, Math.min(40, Math.floor(w/20)));
+  ctx.fillStyle = '#fff';
+  ctx.font = `bold ${font}px sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.fillText('LCD TEST', cx, cy-8);
+  ctx.font = `${Math.floor(font*0.6)}px sans-serif`;
+  ctx.fillText(w + '×' + h, cx, cy+font*0.4+12);
+}
+
+function drawCrossTalkHV(ctx, w, h) {
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = '#000000';
+  ctx.fillRect(w/3, h/3, w/3, h/3);
+}
+
+function drawCrossTalkH(ctx, w, h) {
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = '#000000';
+  ctx.fillRect(0, h/3, w/3, h/3);
+  ctx.fillRect(2*w/3, h/3, w/3, h/3);
+}
+
+function drawCrossTalkV(ctx, w, h) {
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = '#000000';
+  ctx.fillRect(w/3, 0, w/3, h/3);
+  ctx.fillRect(w/3, 2*h/3, w/3, h/3);
+}
+
+function drawFlickerPattern(ctx, w, h, ca, cb, bs) {
+  const c = document.createElement('canvas');
+  c.width = 2; c.height = 2*bs;
+  const cc = c.getContext('2d');
+  cc.fillStyle = ca; cc.fillRect(0, 0, 2, 2*bs);
+  cc.fillStyle = cb; cc.fillRect(0, 0, 2, bs);
+  const pat = ctx.createPattern(c, 'repeat');
+  ctx.fillStyle = pat;
+  ctx.fillRect(0, 0, w, h);
+}
+
+function drawFlickerH(ctx, w, h, ca, cb) {
+  const c = document.createElement('canvas');
+  c.width = w; c.height = 2;
+  const cc = c.getContext('2d');
+  cc.fillStyle = ca; cc.fillRect(0, 0, w, 2);
+  cc.strokeStyle = cb; cc.lineWidth = 1;
+  cc.beginPath(); cc.moveTo(0,1); cc.lineTo(w,1); cc.stroke();
+  const pat = ctx.createPattern(c, 'repeat');
+  ctx.fillStyle = pat;
+  ctx.fillRect(0, 0, w, h);
+}
+
+function drawFlickerV(ctx, w, h, ca, cb) {
+  const c = document.createElement('canvas');
+  c.width = 2; c.height = h;
+  const cc = c.getContext('2d');
+  cc.fillStyle = ca; cc.fillRect(0, 0, 2, h);
+  cc.strokeStyle = cb; cc.lineWidth = 1;
+  cc.beginPath(); cc.moveTo(1,0); cc.lineTo(1,h); cc.stroke();
+  const pat = ctx.createPattern(c, 'repeat');
+  ctx.fillStyle = pat;
+  ctx.fillRect(0, 0, w, h);
+}
+
+function drawGradient(ctx, w, h, start, end, dir) {
+  let x0 = 0, y0 = 0, x1 = 1, y1 = 1;
+  const dirs = {
+    'LR':     ()=>{ x0=0; y0=0; x1=w; y1=0; },
+    'RL':     ()=>{ x0=w; y0=0; x1=0; y1=0; },
+    'UD':     ()=>{ x0=0; y0=0; x1=0; y1=h; },
+    'DU':     ()=>{ x0=0; y0=h; x1=0; y1=0; },
+    'LU-RD':  ()=>{ x0=0; y0=0; x1=w; y1=h; },
+    'RD-LU':  ()=>{ x0=w; y0=h; x1=0; y1=0; },
+    'RU-LD':  ()=>{ x0=w; y0=0; x1=0; y1=h; },
+    'LD-RU':  ()=>{ x0=0; y0=h; x1=w; y1=0; },
+  };
+  if (dirs[dir]) dirs[dir]();
+  else { x0=0; y0=0; x1=w; y1=0; }
+  const grad = ctx.createLinearGradient(x0, y0, x1, y1);
+  grad.addColorStop(0, start);
+  grad.addColorStop(1, end);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+}
+
+// ===================================================================
+// MAIN GENERATE FUNCTION
+// ===================================================================
+function generate() {
+  const resX = parseInt(document.getElementById('resX').value);
+  const resY = parseInt(document.getElementById('resY').value);
+  const cutPanel = document.getElementById('chkCutPanel').checked;
+  const keepY = cutPanel ? parseInt(document.getElementById('cutKeep').value) : resY;
+  const totalH = cutPanel ? parseInt(document.getElementById('cutTotal').value) : resY;
+  const fmt = document.querySelector('input[name="fmt"]:checked').value;
+  const gradStart = document.getElementById('gradStart').value;
+  const gradEnd = document.getElementById('gradEnd').value;
+  const gradDir = document.querySelector('input[name="gradDir"]:checked').value;
+  const colA = document.getElementById('flickColorA').value;
+  const colB = document.getElementById('flickColorB').value;
+  const bs = parseInt(document.getElementById('flickBlockSize').value);
+  const showPreview = document.getElementById('chkShowPreview').checked;
+
+  const genW = resX, genH = keepY;
+  const results = [];
+
+  function applyCut(canvas) {
+    if (!cutPanel) return canvas;
+    const out = document.createElement('canvas');
+    out.width = resX; out.height = totalH;
+    const oc = out.getContext('2d');
+    oc.fillStyle = '#000000';
+    oc.fillRect(0, 0, resX, totalH);
+    oc.drawImage(canvas, 0, totalH - keepY);
+    return out;
+  }
+
+  function buildCanvas(w, h, drawFn) {
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const cx = c.getContext('2d');
+    // Disable anti-aliasing for pixel-precise patterns
+    cx.imageSmoothingEnabled = false;
+    drawFn(cx, w, h);
+    return c;
+  }
+
+  function addResult(name, canvas) {
+    const final = applyCut(canvas);
+    results.push({ name, canvas: final, format: fmt });
+  }
+
+  // Check which patterns are selected
+  document.querySelectorAll('.pattern-item input[type="checkbox"]').forEach(cb => {
+    if (!cb.checked) return;
+    const id = cb.dataset.patternId;
+    const p = PATTERNS.find(x => x.id === id);
+    if (!p) return;
+
+    switch (p.gen) {
+      case 'solid': {
+        const color = p.params.color.def;
+        addResult(p.label, buildCanvas(genW, genH, (ctx,w,h) => drawSolid(ctx,w,h,color)));
+        break;
+      }
+      case 'frame': {
+        const fw = parseInt(document.getElementById('p_'+id+'_frameWidth').value || 4);
+        const circle = document.getElementById('p_'+id+'_isCircle').checked;
+        addResult(p.label, buildCanvas(genW, genH, (ctx,w,h) => drawFrame(ctx,w,h,fw,circle)));
+        break;
+      }
+      case 'colorBar': {
+        addResult(p.label, buildCanvas(genW, genH, drawColorBar));
+        break;
+      }
+      case 'grayCrosstalk': {
+        addResult(p.label, buildCanvas(genW, genH, (ctx,w,h) => drawGrayCrosstalk(ctx,w,h,gradStart,gradEnd)));
+        break;
+      }
+      case 'samplePic': {
+        addResult(p.label, buildCanvas(genW, genH, drawSamplePic));
+        break;
+      }
+      case 'scale': {
+        addResult(p.label, buildCanvas(genW, genH, drawScale));
+        break;
+      }
+      case 'frameTriangle': {
+        addResult(p.label, buildCanvas(genW, genH, drawFrameTriangle));
+        break;
+      }
+      case 'chess': {
+        const gs = parseInt(document.getElementById('p_'+id+'_gridSize').value || 16);
+        addResult(p.label, buildCanvas(genW, genH, (ctx,w,h) => drawChess(ctx,w,h,gs)));
+        break;
+      }
+      case 'hline': {
+        const sw = parseInt(document.getElementById('p_'+id+'_stripeWidth').value || 4);
+        addResult(p.label, buildCanvas(genW, genH, (ctx,w,h) => drawHLine(ctx,w,h,sw)));
+        break;
+      }
+      case 'vline': {
+        const sw2 = parseInt(document.getElementById('p_'+id+'_stripeWidth').value || 4);
+        addResult(p.label, buildCanvas(genW, genH, (ctx,w,h) => drawVLine(ctx,w,h,sw2)));
+        break;
+      }
+      case 'allrgb': {
+        addResult(p.label, buildCanvas(genW, genH, drawAllRGB));
+        break;
+      }
+      case 'xtalkHV': {
+        addResult(p.label, buildCanvas(genW, genH, drawCrossTalkHV));
+        break;
+      }
+      case 'xtalkH': {
+        addResult(p.label, buildCanvas(genW, genH, drawCrossTalkH));
+        break;
+      }
+      case 'xtalkV': {
+        addResult(p.label, buildCanvas(genW, genH, drawCrossTalkV));
+        break;
+      }
+      case 'flickerPattern': {
+        addResult(p.label, buildCanvas(genW, genH, (ctx,w,h) => drawFlickerPattern(ctx,w,h,colA,colB,bs)));
+        break;
+      }
+      case 'flickerH': {
+        addResult(p.label, buildCanvas(genW, genH, (ctx,w,h) => drawFlickerH(ctx,w,h,colA,colB)));
+        break;
+      }
+      case 'flickerV': {
+        addResult(p.label, buildCanvas(genW, genH, (ctx,w,h) => drawFlickerV(ctx,w,h,colA,colB)));
+        break;
+      }
+      case 'gradient': {
+        addResult(p.label, buildCanvas(genW, genH, (ctx,w,h) => drawGradient(ctx,w,h,gradStart,gradEnd,gradDir)));
+        break;
+      }
+    }
+  });
+
+  // Show results
+  const section = document.getElementById('resultsSection');
+  const gallery = document.getElementById('gallery');
+  const count = document.getElementById('resultCount');
+  gallery.innerHTML = '';
+  section.style.display = 'block';
+  document.getElementById('resultsPlaceholder').style.display = 'none';
+
+  if (results.length === 0) {
+    gallery.innerHTML = '<div class="empty-state"><p>No patterns selected. Check some patterns above and try again.</p></div>';
+    count.textContent = '(0 images)';
+    return;
+  }
+
+  count.textContent = `(${results.length} images)`;
+  results.forEach(r => {
+    const div = document.createElement('div');
+    div.className = 'gallery-item';
+    const c = document.createElement('canvas');
+    c.width = r.canvas.width;
+    c.height = r.canvas.height;
+    const cx = c.getContext('2d');
+    cx.imageSmoothingEnabled = false;
+    cx.drawImage(r.canvas, 0, 0);
+    if (showPreview) {
+      // scale down for preview
+      const maxPreview = 280;
+      const scale = Math.min(1, maxPreview / Math.max(c.width, c.height));
+      c.style.width = Math.floor(c.width * scale) + 'px';
+      c.style.height = Math.floor(c.height * scale) + 'px';
+    } else {
+      c.style.width = '100%';
+      c.style.aspectRatio = c.width / c.height;
+    }
+    c.dataset.index = results.indexOf(r);
+    c.addEventListener('click', () => openModal(r.canvas));
+    c.style.cursor = 'pointer';
+
+    const info = document.createElement('div');
+    info.className = 'info';
+    info.innerHTML = `<span class="name">${r.name}</span><span class="size">${r.canvas.width}×${r.canvas.height}</span>`;
+
+    const dlBtn = document.createElement('button');
+    dlBtn.className = 'btn btn-sm btn-secondary';
+    dlBtn.textContent = 'Download';
+    dlBtn.addEventListener('click', (e) => { e.stopPropagation(); downloadCanvas(r.canvas, r.name, r.format); });
+
+    info.appendChild(dlBtn);
+    div.appendChild(c);
+    div.appendChild(info);
+    gallery.appendChild(div);
+  });
+
+  // store for zip download
+  window._lastResults = results;
+}
+
+// ===================================================================
+// DOWNLOAD HELPERS
+// ===================================================================
+function downloadCanvas(canvas, name, format) {
+  const mime = format === 'jpeg' ? 'image/jpeg' : 'image/png';
+  const ext = format === 'jpeg' ? '.jpg' : '.png';
+  canvas.toBlob(blob => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = sanitizeName(name) + ext;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }, mime, format === 'jpeg' ? 0.95 : undefined);
+}
+
+function sanitizeName(s) {
+  return s.replace(/[^a-zA-Z0-9_\-一-鿿]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+}
+
+async function downloadAllAsZip() {
+  const results = window._lastResults;
+  if (!results || results.length === 0) return;
+  if (typeof JSZip === 'undefined') {
+    alert('JSZip library not loaded. Please check your internet connection and refresh.');
+    return;
+  }
+  const zip = new JSZip();
+  const folder = zip.folder('lcd_test_patterns');
+  const promises = results.map(r => new Promise(resolve => {
+    const mime = r.format === 'jpeg' ? 'image/jpeg' : 'image/png';
+    const ext = r.format === 'jpeg' ? '.jpg' : '.png';
+    r.canvas.toBlob(blob => {
+      folder.file(sanitizeName(r.name) + ext, blob);
+      resolve();
+    }, mime, r.format === 'jpeg' ? 0.95 : undefined);
+  }));
+  await Promise.all(promises);
+  const zipBlob = await zip.generateAsync({ type: 'blob' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(zipBlob);
+  a.download = 'lcd_test_patterns.zip';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ===================================================================
+// MODAL
+// ===================================================================
+function openModal(canvas) {
+  const modal = document.getElementById('modal');
+  const mc = document.getElementById('modalCanvas');
+  mc.width = canvas.width;
+  mc.height = canvas.height;
+  const ctx = mc.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(canvas, 0, 0);
+  modal.classList.add('open');
+}
+
+document.getElementById('modalClose').addEventListener('click', () => {
+  document.getElementById('modal').classList.remove('open');
+});
+document.getElementById('modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) document.getElementById('modal').classList.remove('open');
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') document.getElementById('modal').classList.remove('open');
+});
+
+// ===================================================================
+// UI SETUP
+// ===================================================================
+function buildPatternList() {
+  const container = document.getElementById('patternList');
+  container.innerHTML = '';
+  let lastCat = '';
+  PATTERNS.forEach(p => {
+    if (p.cat !== lastCat) {
+      const catDiv = document.createElement('div');
+      catDiv.className = 'pattern-category-label';
+      const count = PATTERNS.filter(x => x.cat === p.cat).length;
+      catDiv.innerHTML = `${p.cat} <span class="badge">${count}</span>`;
+      container.appendChild(catDiv);
+      lastCat = p.cat;
+    }
+    const item = document.createElement('label');
+    item.className = 'pattern-item';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.dataset.patternId = p.id;
+    const span = document.createElement('span');
+    span.textContent = p.label;
+
+    item.appendChild(cb);
+    item.appendChild(span);
+
+    if (p.params) {
+      const paramsDiv = document.createElement('span');
+      paramsDiv.className = 'params';
+      Object.entries(p.params).forEach(([key, conf]) => {
+        if (conf.hidden) return;
+        if (conf.type === 'checkbox') {
+          const lbl = document.createElement('label');
+          const chk = document.createElement('input');
+          chk.type = 'checkbox';
+          chk.id = 'p_'+p.id+'_'+key;
+          chk.checked = conf.def;
+          lbl.appendChild(chk);
+          lbl.appendChild(document.createTextNode(conf.label));
+          paramsDiv.appendChild(lbl);
+        } else {
+          const lbl = document.createElement('label');
+          lbl.textContent = conf.label;
+          const inp = document.createElement('input');
+          inp.type = 'number';
+          inp.id = 'p_'+p.id+'_'+key;
+          inp.value = conf.def;
+          inp.min = conf.min || 0;
+          inp.max = conf.max || 9999;
+          paramsDiv.appendChild(lbl);
+          paramsDiv.appendChild(inp);
+        }
+      });
+      item.appendChild(paramsDiv);
+    }
+    container.appendChild(item);
+  });
+  updateSelectedCount();
+  document.querySelectorAll('#patternList input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', updateSelectedCount);
+  });
+}
+
+function updateSelectedCount() {
+  const n = document.querySelectorAll('#patternList input[type="checkbox"]:checked').length;
+  document.getElementById('selectedCount').textContent = n + ' selected';
+}
+
+function selectAllInView() {
+  document.querySelectorAll('#patternList input[type="checkbox"]').forEach(cb => cb.checked = true);
+  updateSelectedCount();
+}
+
+function deselectAll() {
+  document.querySelectorAll('#patternList input[type="checkbox"]').forEach(cb => cb.checked = false);
+  updateSelectedCount();
+}
+
+function selectDetailMode() {
+  PATTERNS.forEach(p => {
+    const cb = document.querySelector(`#patternList input[data-pattern-id="${p.id}"]`);
+    if (!cb) return;
+    cb.checked = p.cat === 'Detail Mode';
+  });
+  updateSelectedCount();
+}
+
+function selectSimpleMode() {
+  PATTERNS.forEach(p => {
+    const cb = document.querySelector(`#patternList input[data-pattern-id="${p.id}"]`);
+    if (!cb) return;
+    cb.checked = p.cat === 'Simple Mode';
+  });
+  updateSelectedCount();
+}
+
+// ===================================================================
+// DPI TIMING CALCULATOR
+// ===================================================================
+function calculatePixelClock() {
+  const hsw = +document.getElementById('hsw').value;
+  const hbp = +document.getElementById('hbp').value;
+  const hact = +document.getElementById('hact').value;
+  const hfp = +document.getElementById('hfp').value;
+  const vsw = +document.getElementById('vsw').value;
+  const vbp = +document.getElementById('vbp').value;
+  const vact = +document.getElementById('vact').value;
+  const vfp = +document.getElementById('vfp').value;
+  const fps = +document.getElementById('fps').value;
+  const hTotal = hsw + hbp + hact + hfp;
+  const vTotal = vsw + vbp + vact + vfp;
+  const clk = hTotal * vTotal * fps;
+  document.getElementById('clkResult').value = Math.round(clk);
+  return clk;
+}
+
+function calculateDSI() {
+  const clk = +document.getElementById('clkResult').value;
+  const lanes = +document.getElementById('dsiLanes').value;
+  const bits = +document.getElementById('dsiColorBits').value;
+  const bitrate = clk * bits / lanes;
+  document.getElementById('dsiResult').value = Math.round(bitrate);
+}
+
+function generateScript() {
+  const hsw = document.getElementById('hsw').value;
+  const hbp = document.getElementById('hbp').value;
+  const hact = document.getElementById('hact').value;
+  const hfp = document.getElementById('hfp').value;
+  const vsw = document.getElementById('vsw').value;
+  const vbp = document.getElementById('vbp').value;
+  const vact = document.getElementById('vact').value;
+  const vfp = document.getElementById('vfp').value;
+  const fps = document.getElementById('fps').value;
+  const clk = document.getElementById('clkResult').value;
+  const polHs = document.getElementById('polHs').value;
+  const polVs = document.getElementById('polVs').value;
+  const polDe = document.getElementById('polDe').value;
+  const polClk = document.getElementById('polClk').value;
+  const dsiEn = document.getElementById('chkDsi').checked;
+  const dsiLanes = document.getElementById('dsiLanes').value;
+  const dsiBits = document.getElementById('dsiColorBits').value;
+  const dsiBr = document.getElementById('dsiResult').value;
+
+  const lines = [
+    '-- LCD DPI Timing Configuration',
+    '-- Generated by LCD Test Patterns',
+    '',
+    `HA=${hact}`,
+    `HSW=${hsw}`,
+    `HBP=${hbp}`,
+    `HFP=${hfp}`,
+    `VA=${vact}`,
+    `VSW=${vsw}`,
+    `VBP=${vbp}`,
+    `VFP=${vfp}`,
+    `FPS=${fps}`,
+    `CLK=${clk}  -- KHz`,
+    '',
+    `HSYNC_POL=${polHs}  -- 0:LOW-ACT  1:HIGH-ACT`,
+    `VSYNC_POL=${polVs}  -- 0:LOW-ACT  1:HIGH-ACT`,
+    `DE_POL=${polDe}     -- 0:LOW-ACT  1:HIGH-ACT`,
+    `CLK_POL=${polClk}   -- 0:RISING-EDGE  1:FALLING-EDGE`,
+    '',
+    `H_TOTAL=${+hsw + +hbp + +hact + +hfp}`,
+    `V_TOTAL=${+vsw + +vbp + +vact + +vfp}`,
+  ];
+  if (dsiEn) {
+    lines.push('', '-- DSI Settings', `DSI_LANES=${dsiLanes}`, `DSI_COLOR_BITS=${dsiBits}`, `DSI_BITRATE=${dsiBr}  -- Mbps`);
+  }
+  lines.push('', `-- t10_DPI(HA, HSW, HBP, HFP, VA, VSW, VBP, VFP, HSYNC_POL, VSYNC_POL, DE_POL, CLK_POL, FPS)`);
+
+  document.getElementById('configOutput').textContent = lines.join('\n');
+}
+
+// ===================================================================
+// EVENT BINDING
+// ===================================================================
+document.addEventListener('DOMContentLoaded', () => {
+  buildPatternList();
+
+  // Tab switching
+  document.querySelectorAll('.tab-nav button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-nav button').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Resolution presets
+  document.getElementById('resPreset').addEventListener('change', function() {
+    if (!this.value) return;
+    const [x, y] = this.value.split(',').map(Number);
+    document.getElementById('resX').value = x;
+    document.getElementById('resY').value = y;
+    document.getElementById('hact').value = x;
+    document.getElementById('vact').value = y;
+  });
+
+  // Resolution sync to timing
+  document.getElementById('resX').addEventListener('change', function() {
+    document.getElementById('hact').value = this.value;
+  });
+  document.getElementById('resY').addEventListener('change', function() {
+    document.getElementById('vact').value = this.value;
+  });
+
+  // Swap XY
+  document.getElementById('btnSwap').addEventListener('click', () => {
+    const x = document.getElementById('resX');
+    const y = document.getElementById('resY');
+    const t = x.value; x.value = y.value; y.value = t;
+    document.getElementById('hact').value = x.value;
+    document.getElementById('vact').value = y.value;
+  });
+
+  // Cut panel
+  document.getElementById('chkCutPanel').addEventListener('change', function() {
+    document.getElementById('cutKeep').disabled = !this.checked;
+    document.getElementById('cutTotal').disabled = !this.checked;
+    if (this.checked) {
+      document.getElementById('cutKeep').value = document.getElementById('resY').value;
+      document.getElementById('cutTotal').value = parseInt(document.getElementById('resY').value) + 40;
+    }
+  });
+
+  // Generate
+  document.getElementById('btnGenerate').addEventListener('click', generate);
+
+  // Enter key support
+  document.getElementById('resX').addEventListener('keydown', e => { if (e.key === 'Enter') generate(); });
+  document.getElementById('resY').addEventListener('keydown', e => { if (e.key === 'Enter') generate(); });
+
+  // DPI Calculator
+  document.getElementById('btnCalcClk').addEventListener('click', calculatePixelClock);
+  document.getElementById('btnCalcDsi').addEventListener('click', calculateDSI);
+  document.getElementById('chkDsi').addEventListener('change', function() {
+    const en = this.checked;
+    document.getElementById('dsiLanes').disabled = !en;
+    document.getElementById('dsiColorBits').disabled = !en;
+    document.getElementById('btnCalcDsi').disabled = !en;
+  });
+  document.getElementById('btnGenScript').addEventListener('click', generateScript);
+
+  // Copy script
+  document.getElementById('btnCopyScript').addEventListener('click', () => {
+    const text = document.getElementById('configOutput').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('btnCopyScript');
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = 'Copy to Clipboard'; }, 2000);
+    });
+  });
+
+  // Download all
+  document.getElementById('btnDownloadAll').addEventListener('click', downloadAllAsZip);
+
+  // Quick calc on tab2 input change
+  document.querySelectorAll('#tab-timing input[type="number"]').forEach(inp => {
+    inp.addEventListener('change', calculatePixelClock);
+  });
+});
+</script>
+</body>
+</html>

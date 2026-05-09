@@ -1,0 +1,13 @@
+name: LCD Test Patterns
+image: https://raw.githubusercontent.com/Martlet-Tech/lcd-test-patterns/main/preview.png
+description: Web-based LCD display test pattern generator for panel debug and characterization
+
+# GitHub Pages
+lsi: false
+safe: true
+source: ./
+incremental: false
+highlighter: rouge
+gist:
+  noscript: false
+# No Jekyll theme — plain HTML/JS
