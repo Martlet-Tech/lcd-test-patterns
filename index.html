@@ -293,9 +293,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
   <!-- Generate -->
   <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
     <button class="btn btn-primary" id="btnGenerate" style="padding:12px 32px; font-size:15px;">Generate Patterns</button>
-    <div class="flex gap-8 items-center">
-      <label class="text-sm text-dim"><input type="checkbox" id="chkShowPreview" checked> Show preview</label>
-    </div>
+    <span class="text-dim text-sm">Tip: Right-click any image and select "Save image as..." to save without Windows security warning.</span>
   </div>
 
   <!-- Results -->
@@ -305,6 +303,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
         <span>Generated Patterns <span class="text-dim text-sm" id="resultCount"></span></span>
         <div class="flex gap-8">
           <button class="btn btn-sm btn-success" id="btnDownloadAll">Download All as ZIP</button>
+          <span class="text-dim text-sm" style="font-size:11px;">If blocked by Windows: right-click individual images above &rarr; Save as</span>
         </div>
       </div>
       <div class="section-body">
@@ -768,8 +767,6 @@ function generate() {
   const colA = document.getElementById('flickColorA').value;
   const colB = document.getElementById('flickColorB').value;
   const bs = parseInt(document.getElementById('flickBlockSize').value);
-  const showPreview = document.getElementById('chkShowPreview').checked;
-
   const genW = resX, genH = keepY;
   const results = [];
 
@@ -906,37 +903,50 @@ function generate() {
   results.forEach(r => {
     const div = document.createElement('div');
     div.className = 'gallery-item';
-    const c = document.createElement('canvas');
-    c.width = r.canvas.width;
-    c.height = r.canvas.height;
-    const cx = c.getContext('2d');
-    cx.imageSmoothingEnabled = false;
-    cx.drawImage(r.canvas, 0, 0);
-    if (showPreview) {
-      // scale down for preview
-      const maxPreview = 280;
-      const scale = Math.min(1, maxPreview / Math.max(c.width, c.height));
-      c.style.width = Math.floor(c.width * scale) + 'px';
-      c.style.height = Math.floor(c.height * scale) + 'px';
-    } else {
-      c.style.width = '100%';
-      c.style.aspectRatio = c.width / c.height;
-    }
-    c.dataset.index = results.indexOf(r);
-    c.addEventListener('click', () => openModal(r.canvas));
-    c.style.cursor = 'pointer';
+    const mime = r.format === 'jpeg' ? 'image/jpeg' : 'image/png';
+    const dataUrl = r.canvas.toDataURL(mime, r.format === 'jpeg' ? 0.95 : undefined);
+
+    const img = document.createElement('img');
+    img.src = dataUrl;
+    img.alt = r.name;
+    img.title = 'Right-click -> Save as (no Windows warning)';
+    img.style.cursor = 'pointer';
+    img.style.display = 'block';
+    img.style.width = '100%';
+    img.loading = 'lazy';
+    img.addEventListener('click', () => openModal(r.canvas));
 
     const info = document.createElement('div');
     info.className = 'info';
-    info.innerHTML = `<span class="name">${r.name}</span><span class="size">${r.canvas.width}×${r.canvas.height}</span>`;
+    info.innerHTML = `<span class="name">${r.name}</span><span class="size">${r.canvas.width}&times;${r.canvas.height}</span>`;
+
+    const btnGroup = document.createElement('div');
+    btnGroup.className = 'flex gap-8';
+
+    const openBtn = document.createElement('button');
+    openBtn.className = 'btn btn-sm btn-secondary';
+    openBtn.textContent = 'Open';
+    openBtn.title = 'Open in new tab (right-click -> Save as)';
+    openBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      window.open(dataUrl, '_blank');
+    });
 
     const dlBtn = document.createElement('button');
     dlBtn.className = 'btn btn-sm btn-secondary';
     dlBtn.textContent = 'Download';
-    dlBtn.addEventListener('click', (e) => { e.stopPropagation(); downloadCanvas(r.canvas, r.name, r.format); });
+    dlBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = sanitizeName(r.name) + (r.format === 'jpeg' ? '.jpg' : '.png');
+      a.click();
+    });
 
-    info.appendChild(dlBtn);
-    div.appendChild(c);
+    btnGroup.appendChild(openBtn);
+    btnGroup.appendChild(dlBtn);
+    info.appendChild(btnGroup);
+    div.appendChild(img);
     div.appendChild(info);
     gallery.appendChild(div);
   });
@@ -948,18 +958,6 @@ function generate() {
 // ===================================================================
 // DOWNLOAD HELPERS
 // ===================================================================
-function downloadCanvas(canvas, name, format) {
-  const mime = format === 'jpeg' ? 'image/jpeg' : 'image/png';
-  const ext = format === 'jpeg' ? '.jpg' : '.png';
-  canvas.toBlob(blob => {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = sanitizeName(name) + ext;
-    a.click();
-    URL.revokeObjectURL(a.href);
-  }, mime, format === 'jpeg' ? 0.95 : undefined);
-}
-
 function sanitizeName(s) {
   return s.replace(/[^a-zA-Z0-9_\-一-鿿]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
 }
